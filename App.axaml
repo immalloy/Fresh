@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="FreshApp.App"
              xmlns:local="using:FreshApp"
+             xmlns:themes="clr-namespace:ShadUI;assembly=ShadUI"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -11,5 +12,6 @@
   
     <Application.Styles>
         <FluentTheme />
+        <themes:ShadTheme />
     </Application.Styles>
 </Application>
