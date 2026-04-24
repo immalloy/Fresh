@@ -1,31 +1,51 @@
-# Build results
-bin/
-obj/
-[Bb]uild/
-[Ll]og/
-[Ll]ogs/
+# Dependencies
+node_modules/
 
-# Visual Studio
-.vs/
+# Build output
+dist/
+dist-desktop/
+out/
+src-tauri/target/
+src-tauri/gen/
+.tauri/
+*.tsbuildinfo
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+bun-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor
+.vscode/
+.idea/
 *.suo
 *.user
-*.userosscache
-*.sln.docstates
 
-# NuGet
-*.nupkg
-*.snupkg
-**/[Pp]ackages/*
+# Local dev
+*.local
 
-# JetBrains Rider
-.idea/
+# FunkHub internal
+/.megamemory
+.megamemory/
+.sisyphus/
+*.db
+*.db-shm
+*.db-wal
 
-# Visual Studio Code
-.vscode/
+# Electron builder cache
+.electron-builder-cache/
+gb-api-v11.postman_collection.json
 
-# macOS
-.DS_Store
-
-# User-specific files
-*.rsuser
-*.userprefs
+# Tauri / Rust temp files
+**/*.pdb
+**/*.ilk
