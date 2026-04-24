@@ -6,7 +6,28 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'PhantomMuff';
+  src: url('./assets/PhantomMuff-Full-Letters-1.1.5.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Shifa Rame';
+  src: url('./assets/Shifa-Rame.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 .font-bigstage {
-  font-family: 'Bigstage', 'Segoe UI', Tahoma, sans-serif;
+  font-family: 'PhantomMuff', 'Bigstage', 'Segoe UI', Tahoma, sans-serif;
+  letter-spacing: 0.03em;
+}
+
+.font-brand-display {
+  font-family: 'PhantomMuff', 'Bigstage', 'Segoe UI', Tahoma, sans-serif;
   letter-spacing: 0.03em;
 }

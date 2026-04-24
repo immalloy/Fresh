@@ -272,13 +272,13 @@ function createFocusColors(primary: string, _background: string): ThemeDefinitio
 export const THEMES: ThemeDefinition[] = [
   {
     id: "fresh",
-    name: "Fresh",
-    hue: "25",
+    name: "Fresh!",
+    hue: "208",
     colors: {
-      light: createLightColors("#E8743B", "#FAF8F5"),
-      dark: createDarkColors("#E8743B", "#1A1512"),
-      vibrant: createVibrantColors("#E8743B", "#1A1512"),
-      focus: createFocusColors("#E8743B", "#1A1512"),
+      light: createLightColors("#50A5EB", "#F4F8FC"),
+      dark: createDarkColors("#50A5EB", "#111B2A"),
+      vibrant: createVibrantColors("#50A5EB", "#111B2A"),
+      focus: createFocusColors("#50A5EB", "#111B2A"),
     },
   },
   {
