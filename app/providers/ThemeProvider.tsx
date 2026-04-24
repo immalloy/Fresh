@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react";
-import { THEMES, getThemeById } from "../services/funkhub/themes";
-import { AVAILABLE_MODES, type ThemeMode, type BaseMode, type ColorSetKey, type ThemeContextType } from "../services/funkhub/themeTypes";
+import { THEMES, getThemeById } from "../services/fresh/themes";
+import { AVAILABLE_MODES, type ThemeMode, type BaseMode, type ColorSetKey, type ThemeContextType } from "../services/fresh/themeTypes";
 
 const STORAGE_KEYS = {
-  theme: "funkhub-theme",
-  mode: "funkhub-mode",
-  baseMode: "funkhub-base-mode",
+  theme: "fresh-theme",
+  mode: "fresh-mode",
+  baseMode: "fresh-base-mode",
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -94,8 +94,8 @@ function applyThemeToRoot(themeId: string, mode: ThemeMode, baseMode: BaseMode) 
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<string>(() => {
-    if (typeof window === "undefined") return "funkhub";
-    return localStorage.getItem(STORAGE_KEYS.theme) || "funkhub";
+    if (typeof window === "undefined") return "fresh";
+    return localStorage.getItem(STORAGE_KEYS.theme) || "fresh";
   });
 
   const [mode, setModeState] = useState<ThemeMode>(() => {
@@ -198,4 +198,5 @@ export function useTheme() {
   return context;
 }
 
-export { AVAILABLE_MODES } from "../services/funkhub/themeTypes";
+export { AVAILABLE_MODES } from "../services/fresh/themeTypes";
+

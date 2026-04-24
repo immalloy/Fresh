@@ -242,7 +242,7 @@ async fn effective_roots(app: &AppHandle) -> (PathBuf, PathBuf) {
 }
 
 fn emit_install_progress(app: &AppHandle, payload: InstallProgress) {
-  let _ = app.emit("funkhub:install-progress", payload);
+  let _ = app.emit("fresh:install-progress", payload);
 }
 
 async fn download_to_file(
@@ -679,7 +679,7 @@ async fn launch_engine(app: AppHandle, state: State<'_, AppState>, payload: Laun
   let launch_id_clone = launch_id.clone();
   std::thread::spawn(move || {
     let _ = child.wait();
-    let _ = app_clone.emit("funkhub:launch-exit", serde_json::json!({ "launchId": launch_id_clone }));
+    let _ = app_clone.emit("fresh:launch-exit", serde_json::json!({ "launchId": launch_id_clone }));
   });
 
   Ok(serde_json::json!({ "ok": true, "launchedPath": executable.to_string_lossy().to_string() }))
@@ -1046,12 +1046,12 @@ pub fn run() {
       if let Some(win) = app.get_webview_window("main") {
         let _ = win.set_focus();
       }
-      if let Some(link) = argv.iter().find(|arg| arg.starts_with("fresh:") || arg.starts_with("funkhub:")) {
+      if let Some(link) = argv.iter().find(|arg| arg.starts_with("fresh:") || arg.starts_with("fresh:")) {
         let state = app.state::<AppState>();
         if let Ok(mut pending) = state.pending_deep_links.lock() {
           pending.push(link.to_string());
         }
-        let _ = app.emit("funkhub:deep-link", serde_json::json!({ "url": link }));
+        let _ = app.emit("fresh:deep-link", serde_json::json!({ "url": link }));
       }
     }))
     .invoke_handler(tauri::generate_handler![
@@ -1087,7 +1087,7 @@ pub fn run() {
     .setup(|app| {
       let handle = app.handle();
       let args: Vec<String> = std::env::args().collect();
-      if let Some(link) = args.iter().find(|arg| arg.starts_with("fresh:") || arg.starts_with("funkhub:")) {
+      if let Some(link) = args.iter().find(|arg| arg.starts_with("fresh:") || arg.starts_with("fresh:")) {
         let state = handle.state::<AppState>();
         let lock_result = state.pending_deep_links.lock();
         if let Ok(mut pending) = lock_result {
@@ -1099,3 +1099,4 @@ pub fn run() {
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
+

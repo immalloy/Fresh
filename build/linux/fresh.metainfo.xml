@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.funkhub.desktop</id>
+  <id>com.fresh.desktop</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0</project_license>
-  <name>FunkHub</name>
+  <name>Fresh!</name>
   <summary>A Friday Night Funkin' mod launcher and manager.</summary>
-  <developer id="com.funkhub">
+  <developer id="com.fresh">
     <name>ImMalloy</name>
   </developer>
-  <url type="homepage">https://github.com/Crew-Awesome/FunkHub</url>
-  <url type="bugtracker">https://github.com/Crew-Awesome/FunkHub/issues</url>
-  <url type="vcs-browser">https://github.com/Crew-Awesome/FunkHub</url>
-  <launchable type="desktop-id">funkhub.desktop</launchable>
+  <url type="homepage">https://github.com/Crew-Awesome/Fresh!</url>
+  <url type="bugtracker">https://github.com/Crew-Awesome/Fresh!/issues</url>
+  <url type="vcs-browser">https://github.com/Crew-Awesome/Fresh!</url>
+  <launchable type="desktop-id">fresh.desktop</launchable>
   <provides>
-    <binary>funkhub</binary>
+    <binary>fresh</binary>
   </provides>
 
   <description>
-    <p>FunkHub is a simple desktop application for discovering, installing, and launching Friday Night Funkin' mods.</p>
+    <p>Fresh! is a simple desktop application for discovering, installing, and launching Friday Night Funkin' mods.</p>
     <p>It provides an easy way to browse mods from GameBanana, install them into supported engines, and manage different engine instances from one place.</p>
-    <p>FunkHub focuses on being fast, simple to use, and fun to experiment with while managing FNF mods.</p>
+    <p>Fresh! focuses on being fast, simple to use, and fun to experiment with while managing FNF mods.</p>
     <ul>
       <li>Discover mods and browse categories from GameBanana</li>
       <li>Install mods directly into engine mod folders</li>
@@ -27,23 +27,23 @@
       <li>Manage multiple engine instances</li>
       <li>Launch engines directly from the launcher</li>
       <li>Track downloads and update status</li>
-      <li>Support one-click protocol installs (funkhub://)</li>
+      <li>Support one-click protocol installs (fresh://)</li>
     </ul>
     <p>Supported engines include Psych Engine, Base Game / V-Slice, Codename Engine, FPS Plus, JS Engine, ALE Psych, and P-Slice.</p>
-    <p>FunkHub uses the GameBanana API to retrieve mod metadata and provide a streamlined mod installation experience.</p>
+    <p>Fresh! uses the GameBanana API to retrieve mod metadata and provide a streamlined mod installation experience.</p>
   </description>
 
   <screenshots>
     <screenshot type="default">
-      <image>https://github.com/Crew-Awesome/FunkHub/blob/main/assets/art/screenshots/funkhub-screenshot-discover.png?raw=true</image>
+      <image>https://github.com/Crew-Awesome/Fresh!/blob/main/assets/art/screenshots/fresh-screenshot-discover.png?raw=true</image>
       <caption>Browse and discover mods by category</caption>
     </screenshot>
     <screenshot>
-      <image>https://github.com/Crew-Awesome/FunkHub/blob/main/assets/art/screenshots/funkhub-screenshot-library.png?raw=true</image>
+      <image>https://github.com/Crew-Awesome/Fresh!/blob/main/assets/art/screenshots/fresh-screenshot-library.png?raw=true</image>
       <caption>Manage installed mods and launch settings</caption>
     </screenshot>
     <screenshot>
-      <image>https://github.com/Crew-Awesome/FunkHub/blob/main/assets/art/screenshots/funkhub-screenshot-engines.png?raw=true</image>
+      <image>https://github.com/Crew-Awesome/Fresh!/blob/main/assets/art/screenshots/fresh-screenshot-engines.png?raw=true</image>
       <caption>Install and manage engine instances</caption>
     </screenshot>
   </screenshots>
@@ -52,12 +52,12 @@
     <release version="0.1.0" type="stable" date="2026-03-15">
       <description>
         <ul>
-          <li>Initial release of FunkHub</li>
+          <li>Initial release of Fresh!</li>
           <li>GameBanana mod discovery</li>
           <li>Engine manager</li>
           <li>Mod library support</li>
           <li>Download tracking system</li>
-          <li>Protocol installer support (funkhub://)</li>
+          <li>Protocol installer support (fresh://)</li>
         </ul>
       </description>
     </release>
@@ -69,3 +69,5 @@
 
   <content_rating type="oars-1.1" />
 </component>
+
+

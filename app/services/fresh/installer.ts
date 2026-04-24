@@ -146,11 +146,11 @@ export class ModInstallerService {
     requiredEngine?: EngineSlug;
     installedEngine?: EngineSlug;
   }): Promise<InstalledMod> {
-    if (!window.funkhubDesktop) {
+    if (!window.freshDesktop) {
       throw new Error("Desktop bridge is unavailable");
     }
 
-    const result = await window.funkhubDesktop.installArchive(input.request);
+    const result = await window.freshDesktop.installArchive(input.request);
 
     return {
       id: crypto.randomUUID(),
@@ -206,3 +206,4 @@ export class ModInstallerService {
 }
 
 export const modInstallerService = new ModInstallerService();
+

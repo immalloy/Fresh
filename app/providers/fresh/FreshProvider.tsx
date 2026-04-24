@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import { funkHubService } from "../../services/funkhub";
+import { freshService } from "../../services/fresh";
 import {
   ALL_SEARCH_FIELDS,
   AppUpdateInfo,
@@ -9,7 +9,7 @@ import {
   DesktopAppUpdateStatus,
   DownloadTask,
   EngineDefinition,
-  FunkHubSettings,
+  FreshSettings,
   GameBananaModProfile,
   GameBananaModSummary,
   InstallOptions,
@@ -20,13 +20,13 @@ import {
   SearchField,
   SearchSortOrder,
   type SubfeedSort,
-} from "../../services/funkhub";
-import { parseFunkHubDeepLink } from "../../services/funkhub/deepLink";
-import { modInstallerService } from "../../services/funkhub/installer";
-import { funkHubStorageService, DEFAULT_SETTINGS } from "../../services/funkhub/storage";
+} from "../../services/fresh";
+import { parseFreshDeepLink } from "../../services/fresh/deepLink";
+import { modInstallerService } from "../../services/fresh/installer";
+import { freshStorageService, DEFAULT_SETTINGS } from "../../services/fresh/storage";
 import { normalizeLocale, translate } from "../../i18n";
 
-interface FunkHubContextValue {
+interface FreshContextValue {
   loading: boolean;
   bestOfMods: GameBananaModSummary[];
   discoverMods: GameBananaModSummary[];
@@ -36,7 +36,7 @@ interface FunkHubContextValue {
   downloads: DownloadTask[];
   enginesCatalog: EngineDefinition[];
   installedEngines: InstalledEngine[];
-  settings: FunkHubSettings;
+  settings: FreshSettings;
   itchAuth: { connected: boolean; connectedAt?: number; scopes?: string[] };
   selectedCategoryId?: number;
   setSelectedCategoryId: (categoryId?: number) => void;
@@ -98,7 +98,7 @@ interface FunkHubContextValue {
   renameInstalledMod: (installedId: string, newName: string) => void;
   openExternalUrl: (url: string) => Promise<void>;
   removeInstalledMod: (installedId: string, options?: { deleteFiles?: boolean }) => Promise<void>;
-  updateSettings: (patch: Partial<FunkHubSettings>) => Promise<void>;
+  updateSettings: (patch: Partial<FreshSettings>) => Promise<void>;
   browseFolder: (options?: { title?: string; defaultPath?: string }) => Promise<string | undefined>;
   browseFile: (options?: { title?: string; defaultPath?: string; filters?: Array<{ name: string; extensions: string[] }> }) => Promise<string | undefined>;
   openFolderPath: (targetPath: string) => Promise<void>;
@@ -133,19 +133,19 @@ interface FunkHubContextValue {
   clearUnpinnedMods: () => Promise<void>;
 }
 
-const FunkHubContext = createContext<FunkHubContextValue | undefined>(undefined);
+const FreshContext = createContext<FreshContextValue | undefined>(undefined);
 
-export function FunkHubProvider({ children }: { children: ReactNode }) {
+export function FreshProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [bestOfMods, setBestOfMods] = useState<GameBananaModSummary[]>([]);
   const [discoverMods, setDiscoverMods] = useState<GameBananaModSummary[]>([]);
   const [categories, setCategories] = useState<CategoryNode[]>([]);
-  const [downloads, setDownloads] = useState<DownloadTask[]>(funkHubService.getDownloadHistory());
+  const [downloads, setDownloads] = useState<DownloadTask[]>(freshService.getDownloadHistory());
   const [enginesCatalog, setEnginesCatalog] = useState<EngineDefinition[]>([]);
-  const [installedMods, setInstalledMods] = useState<InstalledMod[]>(funkHubService.getInstalledMods());
-  const [modUpdates, setModUpdates] = useState<ModUpdateInfo[]>(funkHubService.getModUpdates());
-  const [installedEngines, setInstalledEngines] = useState<InstalledEngine[]>(funkHubService.getInstalledEngines());
-  const [settings, setSettings] = useState<FunkHubSettings>(funkHubService.getSettings());
+  const [installedMods, setInstalledMods] = useState<InstalledMod[]>(freshService.getInstalledMods());
+  const [modUpdates, setModUpdates] = useState<ModUpdateInfo[]>(freshService.getModUpdates());
+  const [installedEngines, setInstalledEngines] = useState<InstalledEngine[]>(freshService.getInstalledEngines());
+  const [settings, setSettings] = useState<FreshSettings>(freshService.getSettings());
   const [itchAuth, setItchAuth] = useState<{ connected: boolean; connectedAt?: number; scopes?: string[] }>({ connected: false });
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(undefined);
   const [subfeedSort, setSubfeedSort] = useState<SubfeedSort>("default");
@@ -166,7 +166,7 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
   const [appUpdateChecking, setAppUpdateChecking] = useState(false);
   const [appUpdateError, setAppUpdateError] = useState<string | undefined>(undefined);
   const [appUpdateStatus, setAppUpdateStatus] = useState<DesktopAppUpdateStatus | undefined>(
-    funkHubService.getDesktopAppUpdateStatus(),
+    freshService.getDesktopAppUpdateStatus(),
   );
   const startupUpdateCheckedRef = useRef(false);
   const [runningLaunchIds, setRunningLaunchIds] = useState<Set<string>>(new Set());
@@ -223,7 +223,7 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
         : undefined;
 
       if (debouncedSearchQuery.trim().length >= 2) {
-        const paged = await funkHubService.searchModsPage({ query: debouncedSearchQuery, page: discoverPage, perPage: discoverPerPage, order: searchOrder, fields: searchFields });
+        const paged = await freshService.searchModsPage({ query: debouncedSearchQuery, page: discoverPage, perPage: discoverPerPage, order: searchOrder, fields: searchFields });
         const results = paged.records;
         const filtered = selectedCategoryIds
           ? results.filter((mod) => selectedCategoryIds.has(mod.rootCategory?.id ?? -1))
@@ -241,7 +241,7 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
       if (selectedCategoryId === undefined) {
         // No search, no category — use Subfeed (Ripe / New / Updated)
         // Subfeed returns up to ~15 items/page regardless of perPage, so check mods.length > 0
-        const paged = await funkHubService.getSubfeedPage({
+        const paged = await freshService.getSubfeedPage({
           sort: subfeedSort,
           page: discoverPage,
           perPage: discoverPerPage,
@@ -258,7 +258,7 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
       }
 
       // Category selected — use Mod/Index with user-chosen sort
-      const paged = await funkHubService.listModsPage({
+      const paged = await freshService.listModsPage({
         categoryId: selectedCategoryId,
         page: discoverPage,
         perPage: discoverPerPage,
@@ -285,16 +285,16 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
   }, [debouncedSearchQuery, searchOrder, searchFields, selectedCategoryId, subfeedSort, categorySort, discoverPage, browseReleaseType, browseContentRatings, collectCategoryIds]);
 
   const refreshModUpdates = useCallback(async () => {
-    const updates = await funkHubService.refreshModUpdates();
+    const updates = await freshService.refreshModUpdates();
     setModUpdates(updates);
-    setInstalledMods(funkHubService.getInstalledMods());
+    setInstalledMods(freshService.getInstalledMods());
   }, []);
 
   const checkAppUpdate = useCallback(async () => {
     setAppUpdateChecking(true);
     setAppUpdateError(undefined);
     try {
-      const result = await funkHubService.checkAppUpdate();
+      const result = await freshService.checkAppUpdate();
       setAppUpdate(result);
     } catch (error) {
       setAppUpdateError(error instanceof Error ? error.message : "Failed to check app updates");
@@ -309,21 +309,21 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
     }
 
     const targetUrl = appUpdate.downloadUrl || appUpdate.releaseUrl;
-    await funkHubService.openExternalUrl(targetUrl);
+    await freshService.openExternalUrl(targetUrl);
   }, [appUpdate]);
 
   const downloadAppUpdate = useCallback(async () => {
-    await funkHubService.downloadAppUpdate();
+    await freshService.downloadAppUpdate();
   }, []);
 
   const installAppUpdate = useCallback(async () => {
-    await funkHubService.installAppUpdate();
+    await freshService.installAppUpdate();
   }, []);
 
-  const getModProfile = useCallback((modId: number) => funkHubService.getModProfile(modId), []);
+  const getModProfile = useCallback((modId: number) => freshService.getModProfile(modId), []);
 
   const listModsBySubmitter = useCallback((input: { submitterId: number; categoryId?: number; page?: number; perPage?: number }) => (
-    funkHubService.listMods({
+    freshService.listMods({
       submitterId: input.submitterId,
       categoryId: input.categoryId,
       page: input.page,
@@ -352,14 +352,14 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
     processingDeepLinksRef.current.add(normalizedUrl);
 
     try {
-      if (!/^(fresh|funkhub):/i.test(normalizedUrl)) {
+      if (!/^(fresh|fresh):/i.test(normalizedUrl)) {
         return;
       }
 
-      const parsedDeepLink = parseFunkHubDeepLink(normalizedUrl);
+      const parsedDeepLink = parseFreshDeepLink(normalizedUrl);
 
       if (parsedDeepLink.kind === "pair") {
-        const nextSettings = await funkHubService.updateSettings({
+        const nextSettings = await freshService.updateSettings({
           gameBananaIntegration: {
             ...settings.gameBananaIntegration,
             memberId: parsedDeepLink.memberId,
@@ -390,7 +390,7 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
         throw new Error("Install URL must be http/https");
       }
 
-      const profile = await funkHubService.getModProfile(parsedDeepLink.modId);
+      const profile = await freshService.getModProfile(parsedDeepLink.modId);
       if (profile.files.length === 0) {
         throw new Error("No downloadable files found for this mod");
       }
@@ -413,7 +413,7 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
       }
 
       // Check the archive's raw file list for executables — best-effort, non-blocking on failure
-      const rawFileList = await funkHubService.getRawFileList(selectedFileId);
+      const rawFileList = await freshService.getRawFileList(selectedFileId);
       const hasExe = rawFileList.some((f) => /\.(exe|msi|bat|cmd|ps1|sh|appimage|dmg|pkg)$/i.test(f));
       if (settings.compatibilityChecks && hasExe) {
         const exeFiles = rawFileList.filter((f) => /\.(exe|msi|bat|cmd|ps1|sh|appimage|dmg|pkg)$/i.test(f));
@@ -482,7 +482,7 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
         selectedEngineId = undefined;
       }
 
-      funkHubService.queueProtocolInstall({
+      freshService.queueProtocolInstall({
         modId: parsedDeepLink.modId,
         fileId: selectedFileId,
         downloadUrl: parsedDeepLink.archiveUrl || undefined,
@@ -502,25 +502,25 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
 
     try {
       const [bestOf, categoryTree, catalog] = await Promise.all([
-        funkHubService.getTrendingMods(),
-        funkHubService.getFunkHubCategories(),
-        funkHubService.getEngineCatalog(),
-        funkHubService.syncDesktopSettings(),
+        freshService.getTrendingMods(),
+        freshService.getFreshCategories(),
+        freshService.getEngineCatalog(),
+        freshService.syncDesktopSettings(),
       ]);
 
       setBestOfMods(bestOf);
       setCategories(categoryTree);
       setEnginesCatalog(catalog);
-      setInstalledMods(funkHubService.getInstalledMods());
-      setInstalledEngines(funkHubService.getInstalledEngines());
-      await funkHubService.reconcileDiskState();
-      setInstalledMods(funkHubService.getInstalledMods());
-      setInstalledEngines(funkHubService.getInstalledEngines());
-      setSettings(funkHubService.getSettings());
-      setItchAuth(await funkHubService.getItchAuthStatus());
-      await funkHubService.refreshEngineHealth();
-      await funkHubService.hydrateInstalledModMetadata();
-      setInstalledMods(funkHubService.getInstalledMods());
+      setInstalledMods(freshService.getInstalledMods());
+      setInstalledEngines(freshService.getInstalledEngines());
+      await freshService.reconcileDiskState();
+      setInstalledMods(freshService.getInstalledMods());
+      setInstalledEngines(freshService.getInstalledEngines());
+      setSettings(freshService.getSettings());
+      setItchAuth(await freshService.getItchAuthStatus());
+      await freshService.refreshEngineHealth();
+      await freshService.hydrateInstalledModMetadata();
+      setInstalledMods(freshService.getInstalledMods());
       await refreshModUpdates();
     } finally {
       setLoading(false);
@@ -532,10 +532,10 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
   }, [refreshAll]);
 
   useEffect(() => {
-    const unsubscribe = funkHubService.subscribeDownloads((tasks) => {
+    const unsubscribe = freshService.subscribeDownloads((tasks) => {
       setDownloads(tasks);
-      setInstalledMods(funkHubService.getInstalledMods());
-      setModUpdates(funkHubService.getModUpdates());
+      setInstalledMods(freshService.getInstalledMods());
+      setModUpdates(freshService.getModUpdates());
     });
 
     return unsubscribe;
@@ -550,12 +550,12 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
   }, [selectedCategoryId, subfeedSort, categorySort, debouncedSearchQuery, searchOrder, searchFields, browseReleaseType, browseContentRatings]);
 
   useEffect(() => {
-    if (!window.funkhubDesktop?.onDeepLink || !window.funkhubDesktop?.getPendingDeepLinks) {
+    if (!window.freshDesktop?.onDeepLink || !window.freshDesktop?.getPendingDeepLinks) {
       return;
     }
 
     let cancelled = false;
-    window.funkhubDesktop.getPendingDeepLinks()
+    window.freshDesktop.getPendingDeepLinks()
       .then((payload) => {
         if (cancelled) {
           return;
@@ -566,7 +566,7 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => undefined);
 
-    const unsubscribe = window.funkhubDesktop.onDeepLink((payload) => {
+    const unsubscribe = window.freshDesktop.onDeepLink((payload) => {
       if (!cancelled && payload?.url) {
         handleDeepLink(payload.url);
       }
@@ -579,11 +579,11 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
   }, [handleDeepLink]);
 
   useEffect(() => {
-    if (!window.funkhubDesktop?.onAppUpdateStatus) {
+    if (!window.freshDesktop?.onAppUpdateStatus) {
       return;
     }
 
-    const unsubscribe = window.funkhubDesktop.onAppUpdateStatus((payload) => {
+    const unsubscribe = window.freshDesktop.onAppUpdateStatus((payload) => {
       setAppUpdateStatus(payload);
       if (payload.info) {
         setAppUpdate(payload.info);
@@ -610,18 +610,18 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
     startupUpdateCheckedRef.current = true;
     setAppUpdateChecking(true);
     setAppUpdateError(undefined);
-    funkHubService.checkAppUpdate()
+    freshService.checkAppUpdate()
       .then(async (latest) => {
         setAppUpdate(latest);
         if (latest.available && settings.autoDownloadAppUpdates) {
-          if (window.funkhubDesktop?.downloadAppUpdate) {
+          if (window.freshDesktop?.downloadAppUpdate) {
             try {
-              await funkHubService.downloadAppUpdate();
+              await freshService.downloadAppUpdate();
             } catch {
-              await funkHubService.openExternalUrl(latest.downloadUrl || latest.releaseUrl);
+              await freshService.openExternalUrl(latest.downloadUrl || latest.releaseUrl);
             }
           } else {
-            await funkHubService.openExternalUrl(latest.downloadUrl || latest.releaseUrl);
+            await freshService.openExternalUrl(latest.downloadUrl || latest.releaseUrl);
           }
         }
       })
@@ -634,11 +634,11 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
   }, [settings.autoDownloadAppUpdates, settings.checkAppUpdatesOnStartup]);
 
   useEffect(() => {
-    if (!window.funkhubDesktop?.getRunningLaunches || !window.funkhubDesktop?.onLaunchExit) {
+    if (!window.freshDesktop?.getRunningLaunches || !window.freshDesktop?.onLaunchExit) {
       return;
     }
 
-    window.funkhubDesktop.getRunningLaunches()
+    window.freshDesktop.getRunningLaunches()
       .then(({ launches }) => {
         const ids = new Set(launches.map((l) => l.launchId));
         for (const l of launches) {
@@ -648,7 +648,7 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => undefined);
 
-      const unsubscribe = window.funkhubDesktop.onLaunchExit(({ launchId }) => {
+      const unsubscribe = window.freshDesktop.onLaunchExit(({ launchId }) => {
       launchStartTimesRef.current.delete(launchId);
       setRunningLaunchIds((prev) => {
         const next = new Set(prev);
@@ -660,7 +660,7 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const value = useMemo<FunkHubContextValue>(
+  const value = useMemo<FreshContextValue>(
     () => ({
       loading,
       bestOfMods,
@@ -699,146 +699,146 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
       listModsBySubmitter,
       installMod: (modId, fileId, selectedEngineId, priority = 0, options) => {
         try {
-          funkHubService.queueInstall(modId, fileId, selectedEngineId, priority, options);
+          freshService.queueInstall(modId, fileId, selectedEngineId, priority, options);
           toast.success(t("provider.installQueued", "Install queued — check Downloads for progress."));
         } catch (error) {
           toast.error(error instanceof Error ? error.message : t("provider.unableQueueInstall", "Unable to queue install"));
         }
       },
       installEngine: async (slug, downloadUrl, version, options) => {
-        await funkHubService.installEngineFromRelease({
+        await freshService.installEngineFromRelease({
           slug,
           releaseUrl: downloadUrl,
           releaseVersion: version,
           allowMissingExecutable: options?.allowMissingExecutable,
         });
-        setInstalledEngines(funkHubService.getInstalledEngines());
+        setInstalledEngines(freshService.getInstalledEngines());
       },
       importEngineFromFolder: async (slug, versionHint, sourcePath, customName) => {
-        await funkHubService.importEngineFromFolder({ slug, versionHint, sourcePath, customName });
-        setInstalledEngines(funkHubService.getInstalledEngines());
+        await freshService.importEngineFromFolder({ slug, versionHint, sourcePath, customName });
+        setInstalledEngines(freshService.getInstalledEngines());
       },
       updateEngine: async (engineId) => {
-        await funkHubService.updateEngine(engineId);
-        setInstalledEngines(funkHubService.getInstalledEngines());
+        await freshService.updateEngine(engineId);
+        setInstalledEngines(freshService.getInstalledEngines());
       },
       uninstallEngine: async (engineId) => {
-        await funkHubService.uninstallEngine(engineId);
-        setInstalledEngines(funkHubService.getInstalledEngines());
+        await freshService.uninstallEngine(engineId);
+        setInstalledEngines(freshService.getInstalledEngines());
       },
       launchEngine: async (engineId, options) => {
         launchStartTimesRef.current.set(engineId, Date.now());
-        await funkHubService.launchEngine(engineId, options);
+        await freshService.launchEngine(engineId, options);
         setRunningLaunchIds((prev) => { const next = new Set(prev); next.add(engineId); return next; });
       },
       openEngineFolder: async (engineId) => {
-        await funkHubService.openEngineFolder(engineId);
+        await freshService.openEngineFolder(engineId);
       },
       openEngineModsFolder: async (engineId) => {
-        await funkHubService.openEngineModsFolder(engineId);
+        await freshService.openEngineModsFolder(engineId);
       },
-      getEngineHealth: (engineId) => funkHubService.getEngineHealth(engineId),
+      getEngineHealth: (engineId) => freshService.getEngineHealth(engineId),
       refreshEngineHealth: async (engineId) => {
-        await funkHubService.refreshEngineHealth(engineId);
-        setInstalledEngines(funkHubService.getInstalledEngines());
+        await freshService.refreshEngineHealth(engineId);
+        setInstalledEngines(freshService.getInstalledEngines());
       },
       launchInstalledMod: async (installedId) => {
         const startTime = Date.now();
         launchStartTimesRef.current.set(installedId, startTime);
-        await funkHubService.launchInstalledMod(installedId);
-        setInstalledMods(funkHubService.getInstalledMods());
+        await freshService.launchInstalledMod(installedId);
+        setInstalledMods(freshService.getInstalledMods());
         setRunningLaunchIds((prev) => { const next = new Set(prev); next.add(installedId); return next; });
       },
       updateInstalledModLaunchOptions: async (installedId, options) => {
-        await funkHubService.updateInstalledModLaunchOptions(installedId, options);
-        setInstalledMods(funkHubService.getInstalledMods());
+        await freshService.updateInstalledModLaunchOptions(installedId, options);
+        setInstalledMods(freshService.getInstalledMods());
       },
       cancelDownload: (taskId) => {
-        funkHubService.cancelDownload(taskId);
+        freshService.cancelDownload(taskId);
       },
       retryDownload: (taskId) => {
-        funkHubService.retryDownload(taskId);
+        freshService.retryDownload(taskId);
       },
       clearDownloads: () => {
-        funkHubService.clearDownloadHistory();
-        setDownloads(funkHubService.getDownloadHistory());
+        freshService.clearDownloadHistory();
+        setDownloads(freshService.getDownloadHistory());
       },
       renameEngine: (engineId, name) => {
-        funkHubService.renameEngine(engineId, name);
-        setInstalledEngines(funkHubService.getInstalledEngines());
+        freshService.renameEngine(engineId, name);
+        setInstalledEngines(freshService.getInstalledEngines());
       },
       setEngineCustomIcon: (engineId, iconUrl) => {
-        funkHubService.setEngineCustomIcon(engineId, iconUrl);
-        setInstalledEngines(funkHubService.getInstalledEngines());
+        freshService.setEngineCustomIcon(engineId, iconUrl);
+        setInstalledEngines(freshService.getInstalledEngines());
       },
       setModCustomImage: (installedId, imageUrl) => {
-        funkHubService.setModCustomImage(installedId, imageUrl);
-        setInstalledMods(funkHubService.getInstalledMods());
+        freshService.setModCustomImage(installedId, imageUrl);
+        setInstalledMods(freshService.getInstalledMods());
       },
       setModEnabled: (installedId, enabled) => {
-        funkHubService.setModEnabled(installedId, enabled);
-        setInstalledMods(funkHubService.getInstalledMods());
+        freshService.setModEnabled(installedId, enabled);
+        setInstalledMods(freshService.getInstalledMods());
       },
       setModTags: (installedId, tags) => {
-        funkHubService.setModTags(installedId, tags);
-        setInstalledMods(funkHubService.getInstalledMods());
+        freshService.setModTags(installedId, tags);
+        setInstalledMods(freshService.getInstalledMods());
       },
       setModPinned: (installedId, pinned) => {
-        funkHubService.setModPinned(installedId, pinned);
-        setInstalledMods(funkHubService.getInstalledMods());
+        freshService.setModPinned(installedId, pinned);
+        setInstalledMods(freshService.getInstalledMods());
       },
       setModNotes: (installedId, notes) => {
-        funkHubService.setModNotes(installedId, notes);
-        setInstalledMods(funkHubService.getInstalledMods());
+        freshService.setModNotes(installedId, notes);
+        setInstalledMods(freshService.getInstalledMods());
       },
       renameInstalledMod: (installedId, newName) => {
-        funkHubService.renameInstalledMod(installedId, newName);
-        setInstalledMods(funkHubService.getInstalledMods());
+        freshService.renameInstalledMod(installedId, newName);
+        setInstalledMods(freshService.getInstalledMods());
       },
       openExternalUrl: async (url) => {
-        await funkHubService.openExternalUrl(url);
+        await freshService.openExternalUrl(url);
       },
       setDefaultEngine: (engineId) => {
-        funkHubService.setDefaultEngine(engineId);
-        setInstalledEngines(funkHubService.getInstalledEngines());
+        freshService.setDefaultEngine(engineId);
+        setInstalledEngines(freshService.getInstalledEngines());
       },
       removeInstalledMod: async (installedId, options) => {
-        await funkHubService.removeInstalledMod(installedId, options);
-        setInstalledMods(funkHubService.getInstalledMods());
+        await freshService.removeInstalledMod(installedId, options);
+        setInstalledMods(freshService.getInstalledMods());
       },
       updateSettings: async (patch) => {
-        const next = await funkHubService.updateSettings(patch);
+        const next = await freshService.updateSettings(patch);
         setSettings(next);
       },
-      browseFolder: async (options) => funkHubService.pickFolder(options),
-      browseFile: async (options) => funkHubService.pickFile(options),
+      browseFolder: async (options) => freshService.pickFolder(options),
+      browseFile: async (options) => freshService.pickFile(options),
       openFolderPath: async (targetPath) => {
-        await funkHubService.openAnyPath(targetPath);
+        await freshService.openAnyPath(targetPath);
       },
       addManualMod: async (input) => {
-        await funkHubService.addManualModFromFolder(input);
-        setInstalledMods(funkHubService.getInstalledMods());
+        await freshService.addManualModFromFolder(input);
+        setInstalledMods(freshService.getInstalledMods());
       },
       autodetectInstalledMods: async () => {
-        const added = await funkHubService.scanInstalledEngineModFolders();
-        setInstalledMods(funkHubService.getInstalledMods());
+        const added = await freshService.scanInstalledEngineModFolders();
+        setInstalledMods(freshService.getInstalledMods());
         return added;
       },
       reconcileDiskState: async () => {
-        await funkHubService.reconcileDiskState();
-        setInstalledMods(funkHubService.getInstalledMods());
-        setInstalledEngines(funkHubService.getInstalledEngines());
+        await freshService.reconcileDiskState();
+        setInstalledMods(freshService.getInstalledMods());
+        setInstalledEngines(freshService.getInstalledEngines());
       },
       connectItch: async (clientId) => {
-        await funkHubService.connectItchOAuth(clientId);
-        setItchAuth(await funkHubService.getItchAuthStatus());
+        await freshService.connectItchOAuth(clientId);
+        setItchAuth(await freshService.getItchAuthStatus());
       },
       disconnectItch: async () => {
-        await funkHubService.disconnectItchOAuth();
-        setItchAuth(await funkHubService.getItchAuthStatus());
+        await freshService.disconnectItchOAuth();
+        setItchAuth(await freshService.getItchAuthStatus());
       },
       refreshItchAuth: async () => {
-        setItchAuth(await funkHubService.getItchAuthStatus());
+        setItchAuth(await freshService.getItchAuthStatus());
       },
       appUpdate,
       appUpdateError,
@@ -850,19 +850,19 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
       appUpdateStatus,
       runningLaunchIds,
       killLaunch: async (launchId) => {
-        await window.funkhubDesktop?.killLaunch?.({ launchId });
+        await window.freshDesktop?.killLaunch?.({ launchId });
         setRunningLaunchIds((prev) => { const next = new Set(prev); next.delete(launchId); return next; });
       },
       detectWineRuntimes: async () => {
-        const result = await window.funkhubDesktop?.detectWineRuntimes?.();
+        const result = await window.freshDesktop?.detectWineRuntimes?.();
         return result?.runtimes ?? [];
       },
       scanCommonEnginePaths: async () => {
-        const result = await window.funkhubDesktop?.scanCommonEnginePaths?.();
+        const result = await window.freshDesktop?.scanCommonEnginePaths?.();
         return result?.paths ?? [];
       },
       clearAllData: async () => {
-        funkHubStorageService.clearAllData();
+        freshStorageService.clearAllData();
         setInstalledMods([]);
         setInstalledEngines([]);
         setDownloads([]);
@@ -870,43 +870,43 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
         window.location.reload();
       },
       clearAllMods: async () => {
-        funkHubStorageService.clearMods();
+        freshStorageService.clearMods();
         setInstalledMods([]);
       },
       clearAllEngines: async () => {
-        funkHubStorageService.clearEngines();
+        freshStorageService.clearEngines();
         setInstalledEngines([]);
       },
       clearAllDownloads: async () => {
-        funkHubStorageService.clearDownloads();
+        freshStorageService.clearDownloads();
         setDownloads([]);
       },
       resetSettings: async () => {
-        funkHubStorageService.clearSettings();
+        freshStorageService.clearSettings();
         setSettings(DEFAULT_SETTINGS);
       },
       clearTheme: async () => {
-        funkHubStorageService.clearTheme();
+        freshStorageService.clearTheme();
       },
       clearCompletedDownloads: async () => {
-        funkHubStorageService.clearDownloadsByStatus("completed");
-        setDownloads(funkHubService.getDownloadHistory());
+        freshStorageService.clearDownloadsByStatus("completed");
+        setDownloads(freshService.getDownloadHistory());
       },
       clearFailedDownloads: async () => {
-        funkHubStorageService.clearDownloadsByStatus("failed");
-        setDownloads(funkHubService.getDownloadHistory());
+        freshStorageService.clearDownloadsByStatus("failed");
+        setDownloads(freshService.getDownloadHistory());
       },
       clearActiveDownloads: async () => {
-        funkHubStorageService.clearDownloadsByStatus("active");
-        setDownloads(funkHubService.getDownloadHistory());
+        freshStorageService.clearDownloadsByStatus("active");
+        setDownloads(freshService.getDownloadHistory());
       },
       clearDisabledMods: async () => {
-        funkHubStorageService.clearDisabledMods();
-        setInstalledMods(funkHubStorageService.getInstalledMods());
+        freshStorageService.clearDisabledMods();
+        setInstalledMods(freshStorageService.getInstalledMods());
       },
       clearUnpinnedMods: async () => {
-        funkHubStorageService.clearUnpinnedMods();
-        setInstalledMods(funkHubStorageService.getInstalledMods());
+        freshStorageService.clearUnpinnedMods();
+        setInstalledMods(freshStorageService.getInstalledMods());
       },
     }),
     [
@@ -948,14 +948,16 @@ export function FunkHubProvider({ children }: { children: ReactNode }) {
     ],
   );
 
-  return <FunkHubContext.Provider value={value}>{children}</FunkHubContext.Provider>;
+  return <FreshContext.Provider value={value}>{children}</FreshContext.Provider>;
 }
 
-export function useFunkHub() {
-  const context = useContext(FunkHubContext);
+export function useFresh() {
+  const context = useContext(FreshContext);
   if (!context) {
-    throw new Error("useFunkHub must be used within FunkHubProvider");
+    throw new Error("useFresh must be used within FreshProvider");
   }
   return context;
 }
+
+
 

@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-FunkHub is in active early development. Report security issues for the latest release and current `main` branch.
+Fresh! is in active early development. Report security issues for the latest release and current `main` branch.
 
 ## Reporting a vulnerability
 
@@ -21,3 +21,5 @@ Include:
 - Suggested mitigation (if known)
 
 We will acknowledge reports as soon as possible and coordinate a fix/release.
+
+

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Download, Clock3, User, ExternalLink, ChevronLeft, ChevronRight, Tag } from "lucide-react";
-import { useFunkHub, useI18n } from "../../providers";
-import { modInstallerService, detectRequiredEngineFromCategories } from "../../services/funkhub";
-import type { GameBananaMember, GameBananaModProfile } from "../../services/funkhub";
+import { useFresh, useI18n } from "../../providers";
+import { modInstallerService, detectRequiredEngineFromCategories } from "../../services/fresh";
+import type { GameBananaMember, GameBananaModProfile } from "../../services/fresh";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../shared/ui/dialog";
 
 interface ModVisualizerModalProps {
@@ -66,7 +66,7 @@ const FNF_LOADING_MESSAGES = [
 
 export function ModVisualizerModal({ modId, open, onClose, onOpenSubmitter }: ModVisualizerModalProps) {
   const { t } = useI18n();
-  const { getModProfile, installMod, installedEngines } = useFunkHub();
+  const { getModProfile, installMod, installedEngines } = useFresh();
   const [loading, setLoading] = useState(false);
   const [showLoadingState, setShowLoadingState] = useState(false);
   const [loadingMsgIndex] = useState(() => Math.floor(Math.random() * FNF_LOADING_MESSAGES.length));
@@ -443,3 +443,4 @@ export function ModVisualizerModal({ modId, open, onClose, onOpenSubmitter }: Mo
     </Dialog>
   );
 }
+

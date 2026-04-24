@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Heart, Download, UserCircle2, FolderTree } from "lucide-react";
-import { useFunkHub, useI18n } from "../../providers";
-import type { GameBananaMember, GameBananaModSummary } from "../../services/funkhub";
+import { useFresh, useI18n } from "../../providers";
+import type { GameBananaMember, GameBananaModSummary } from "../../services/fresh";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../shared/ui/dialog";
 
 interface UserProfileModalProps {
@@ -26,7 +26,7 @@ function formatCompact(value?: number): string {
 
 export function UserProfileModal({ open, submitter, onClose, onOpenMod }: UserProfileModalProps) {
   const { t } = useI18n();
-  const { listModsBySubmitter } = useFunkHub();
+  const { listModsBySubmitter } = useFresh();
   const [mods, setMods] = useState<GameBananaModSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -141,3 +141,4 @@ export function UserProfileModal({ open, submitter, onClose, onOpenMod }: UserPr
     </Dialog>
   );
 }
+

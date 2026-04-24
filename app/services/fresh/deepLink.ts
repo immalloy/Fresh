@@ -53,22 +53,22 @@ function parseInstallPathSegments(segments: string[]): ParsedInstallDeepLink | u
   };
 }
 
-export function parseFunkHubDeepLink(rawUrl: string): ParsedDeepLink {
+export function parseFreshDeepLink(rawUrl: string): ParsedDeepLink {
   let normalized = rawUrl.trim();
   if (!normalized) {
     throw new Error("Empty deep link payload");
   }
 
-  if (/^(fresh|funkhub):\/(?!\/)/i.test(normalized)) {
-    normalized = normalized.replace(/^(fresh|funkhub):\//i, "fresh://");
+  if (/^(fresh|fresh):\/(?!\/)/i.test(normalized)) {
+    normalized = normalized.replace(/^(fresh|fresh):\//i, "fresh://");
   }
 
-  if (/^(fresh|funkhub):install\?/i.test(normalized)) {
-    const canonical = normalized.replace(/^(fresh|funkhub):install\?/i, "fresh://install?");
-    return parseFunkHubDeepLink(canonical);
+  if (/^(fresh|fresh):install\?/i.test(normalized)) {
+    const canonical = normalized.replace(/^(fresh|fresh):install\?/i, "fresh://install?");
+    return parseFreshDeepLink(canonical);
   }
 
-  if (/^(fresh|funkhub):\/\//i.test(normalized) || /^(fresh|funkhub):/i.test(normalized)) {
+  if (/^(fresh|fresh):\/\//i.test(normalized) || /^(fresh|fresh):/i.test(normalized)) {
     const parsedUrl = new URL(normalized);
     const hostRaw = parsedUrl.host || "";
     const host = hostRaw.toLowerCase();
@@ -119,7 +119,7 @@ export function parseFunkHubDeepLink(rawUrl: string): ParsedDeepLink {
       };
     }
 
-    const legacyPayload = normalized.replace(/^(fresh|funkhub):\/\//i, "").replace(/^(fresh|funkhub):/i, "");
+    const legacyPayload = normalized.replace(/^(fresh|fresh):\/\//i, "").replace(/^(fresh|fresh):/i, "");
     const legacyParts = legacyPayload.split(",");
     if (legacyParts.length >= 3) {
       const archiveUrl = decodePathToken(legacyParts[0]).trim();
@@ -148,4 +148,5 @@ export function parseFunkHubDeepLink(rawUrl: string): ParsedDeepLink {
     + "fresh://install?mod={ModId}&file={FileId}, or fresh://gamebanana/pair/{MemberId}/{SecretKey}",
   );
 }
+
 

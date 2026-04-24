@@ -4,7 +4,7 @@
   --font-size: 16px;
   --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   
-  /* Default fallback values (funkhub dark) */
+  /* Default fallback values (fresh dark) */
   --background: #1A1512;
   --foreground: #F5EDE6;
   --card: #231C18;
@@ -202,3 +202,4 @@
     line-height: 1.5;
   }
 }
+

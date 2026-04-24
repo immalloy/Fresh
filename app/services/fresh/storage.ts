@@ -1,14 +1,14 @@
-import { DownloadTask, FunkHubSettings, InstalledEngine, InstalledMod } from "./types";
+import { DownloadTask, FreshSettings, InstalledEngine, InstalledMod } from "./types";
 
 const STORAGE_KEYS = {
-  installedMods: "funkhub-installed-mods",
-  installedEngines: "funkhub-installed-engines",
-  downloadHistory: "funkhub-download-history",
-  settings: "funkhub-settings",
-  theme: "funkhub-theme",
+  installedMods: "fresh-installed-mods",
+  installedEngines: "fresh-installed-engines",
+  downloadHistory: "fresh-download-history",
+  settings: "fresh-settings",
+  theme: "fresh-theme",
 } as const;
 
-const DEFAULT_SETTINGS: FunkHubSettings = {
+const DEFAULT_SETTINGS: FreshSettings = {
   locale: "en",
   gameDirectory: "",
   downloadsDirectory: "",
@@ -38,7 +38,7 @@ function safeParse<T>(value: string | null, fallback: T): T {
   }
 }
 
-export class FunkHubStorageService {
+export class FreshStorageService {
   getInstalledMods(): InstalledMod[] {
     return safeParse<InstalledMod[]>(localStorage.getItem(STORAGE_KEYS.installedMods), []);
   }
@@ -63,8 +63,8 @@ export class FunkHubStorageService {
     localStorage.setItem(STORAGE_KEYS.downloadHistory, JSON.stringify(history));
   }
 
-  getSettings(): FunkHubSettings {
-    const parsed = safeParse<Partial<FunkHubSettings>>(localStorage.getItem(STORAGE_KEYS.settings), {});
+  getSettings(): FreshSettings {
+    const parsed = safeParse<Partial<FreshSettings>>(localStorage.getItem(STORAGE_KEYS.settings), {});
     const mergedGameBananaIntegration = {
       ...DEFAULT_SETTINGS.gameBananaIntegration,
       ...(parsed.gameBananaIntegration || {}),
@@ -82,7 +82,7 @@ export class FunkHubStorageService {
     };
   }
 
-  saveSettings(settings: FunkHubSettings): void {
+  saveSettings(settings: FreshSettings): void {
     localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
   }
 
@@ -146,5 +146,7 @@ export class FunkHubStorageService {
 
 }
 
-export const funkHubStorageService = new FunkHubStorageService();
+export const freshStorageService = new FreshStorageService();
 export { DEFAULT_SETTINGS };
+
+

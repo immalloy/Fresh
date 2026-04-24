@@ -18,9 +18,9 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import { useFunkHub, useI18n } from "../../providers";
-import { detectRequiredEngineFromCategories, modInstallerService } from "../../services/funkhub";
-import type { GameBananaMember, GameBananaModProfile } from "../../services/funkhub";
+import { useFresh, useI18n } from "../../providers";
+import { detectRequiredEngineFromCategories, modInstallerService } from "../../services/fresh";
+import type { GameBananaMember, GameBananaModProfile } from "../../services/fresh";
 import { UserProfileModal } from "./UserProfileModal";
 
 function formatCompact(value?: number): string {
@@ -152,7 +152,7 @@ export function ModDetailsPage() {
     installMod,
     installedEngines,
     openExternalUrl,
-  } = useFunkHub();
+  } = useFresh();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -660,3 +660,4 @@ export function ModDetailsPage() {
     </div>
   );
 }
+

@@ -4,8 +4,8 @@ import { Plus, Cpu, Loader2, AlertCircle, Download, ImagePlus } from "lucide-rea
 import { EngineCard } from "./EngineCard";
 import { AddEngineDialog } from "./AddEngineDialog";
 import { getEngineIcon } from "./engineIcons";
-import { useFunkHub, useI18n } from "../../providers";
-import { detectClientPlatform, pickBestReleaseForPlatform, formatEngineName, type EngineSlug } from "../../services/funkhub";
+import { useFresh, useI18n } from "../../providers";
+import { detectClientPlatform, pickBestReleaseForPlatform, formatEngineName, type EngineSlug } from "../../services/fresh";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../shared/ui/dialog";
 import { useEngineManage } from "./useEngineManage";
 
@@ -34,7 +34,7 @@ export function Engines() {
     runningLaunchIds,
     killLaunch,
     detectWineRuntimes,
-  } = useFunkHub();
+  } = useFresh();
 
   const manage = useEngineManage();
   const {
@@ -653,3 +653,4 @@ export function Engines() {
     </div>
   );
 }
+

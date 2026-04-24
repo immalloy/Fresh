@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { normalizeLocale, supportedLocales, translate, type SupportedLocale } from "../i18n";
-import { useFunkHub } from "./funkhub/FunkHubProvider";
+import { useFresh } from "./fresh/FreshProvider";
 
 interface I18nContextValue {
   locale: SupportedLocale;
@@ -12,7 +12,7 @@ interface I18nContextValue {
 const I18nContext = createContext<I18nContextValue | undefined>(undefined);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const { settings, updateSettings } = useFunkHub();
+  const { settings, updateSettings } = useFresh();
   const [locale, setLocaleState] = useState<SupportedLocale>(() => normalizeLocale(settings.locale || navigator.language));
 
   useEffect(() => {
@@ -50,3 +50,4 @@ export function useI18n() {
   }
   return context;
 }
+

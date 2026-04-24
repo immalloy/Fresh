@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { getCurrent as getCurrentDeepLinks, onOpenUrl } from "@tauri-apps/plugin-deep-link";
-import type { DesktopBridge } from "../../app/services/funkhub";
+import type { DesktopBridge } from "../../app/services/fresh";
 
 function asPromise<T>(value: Promise<T>): Promise<T> {
   return value;
@@ -106,16 +106,17 @@ export function createDesktopBridge(): DesktopBridge {
       };
     },
     onInstallProgress: (listener) => listenCompat(
-      ["fresh:install-progress", "funkhub:install-progress"],
+      ["fresh:install-progress", "fresh:install-progress"],
       (payload: Parameters<typeof listener>[0]) => listener(payload),
     ),
     onAppUpdateStatus: (listener) => listenCompat(
-      ["fresh:app-update", "funkhub:app-update"],
+      ["fresh:app-update", "fresh:app-update"],
       (payload: Parameters<typeof listener>[0]) => listener(payload),
     ),
     onLaunchExit: (listener) => listenCompat(
-      ["fresh:launch-exit", "funkhub:launch-exit"],
+      ["fresh:launch-exit", "fresh:launch-exit"],
       (payload: Parameters<typeof listener>[0]) => listener(payload),
     ),
   };
 }
+

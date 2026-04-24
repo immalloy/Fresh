@@ -807,7 +807,7 @@ export class GameBananaApiService {
     return node;
   }
 
-  async getFunkHubCategories(): Promise<CategoryNode[]> {
+  async getFreshCategories(): Promise<CategoryNode[]> {
     const roots = await this.getRootCategories();
     const visited = new Set<number>();
     const tree = await Promise.all(
@@ -855,3 +855,4 @@ export class GameBananaApiService {
 }
 
 export const gameBananaApiService = new GameBananaApiService();
+

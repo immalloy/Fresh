@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Sort order filter on Discover
 - Release type filter (Studio, Indie, Redistribution)
 - Content rating filter (17 categories) on Discover
-- 16 color themes: funkhub, purple, pink, blue, green, red, alepsych, ocean, mint, rose, gold, lavender, midnight, coral, slate, gamebanana
+- 16 color themes: fresh, purple, pink, blue, green, red, alepsych, ocean, mint, rose, gold, lavender, midnight, coral, slate, gamebanana
 - 6 display modes: light, dark, auto, vibrant, pastel, focus
 - `ThemePicker` and `ModePicker` components in Settings > Appearance
 - Data management section in Settings (clear mods, clear engines, clear download history, clear disabled mods, clear unpinned mods, reset play time, clear all data)
@@ -158,7 +158,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Support for basegame, ale-psych, psych, codename engine detection
 - Deep link parsing improvements (`deepLink.ts`)
 - Case-insensitive protocol parsing
-- `funkhub://gamebanana/pair/` format
+- `fresh://gamebanana/pair/` format
 - Raw archive installation
 - 7z extraction with exit code 2 handling
 - Engine installation dialog with version picker
@@ -192,7 +192,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - Onboarding dialog with folder selection
-- `parseFunkHubDeepLink()` service
+- `parseFreshDeepLink()` service
 - GameBanana pairing system (`memberId`, `secretKey`, `pairedAt`)
 - `firstRunCompleted` setting
 - `checkAppUpdatesOnStartup` setting
@@ -220,7 +220,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - GameBanana API integration
 - Mod installer service
 - Engine catalog with automatic release detection
-- Protocol handler (`funkhub://`)
+- Protocol handler (`fresh://`)
 - Native file management
 - React UI with Discover, Engines, Library, Settings, Updates pages
 - Responsive design with dark mode support
@@ -229,3 +229,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 - Initial release
+

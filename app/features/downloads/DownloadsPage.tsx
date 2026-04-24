@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { RotateCcw, X, Download, CheckCircle2, AlertCircle, Clock, Zap, Trash2 } from "lucide-react";
-import { useFunkHub, useI18n } from "../../providers";
+import { useFresh, useI18n } from "../../providers";
 
 function formatBytes(bytes: number | undefined): string {
   if (!bytes || bytes <= 0) {
@@ -29,7 +29,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 export function Downloads() {
   const { t } = useI18n();
-  const { downloads, cancelDownload, retryDownload, clearDownloads, clearActiveDownloads, clearCompletedDownloads, clearFailedDownloads } = useFunkHub();
+  const { downloads, cancelDownload, retryDownload, clearDownloads, clearActiveDownloads, clearCompletedDownloads, clearFailedDownloads } = useFresh();
   const activeDownloads = downloads.filter((task) => task.status === "queued" || task.status === "downloading" || task.status === "installing");
   const completedDownloads = downloads.filter((task) => task.status === "completed");
   const failedDownloads = downloads.filter((task) => task.status === "failed");
@@ -276,3 +276,4 @@ export function Downloads() {
     </div>
   );
 }
+

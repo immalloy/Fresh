@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
 import { Folder, Download, Palette, Sliders, Info, MessageCircle, FolderOpen, Link2, Copy, Trash2, RotateCcw, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { useFunkHub, useI18n, useTheme } from "../../providers";
+import { useFresh, useI18n, useTheme } from "../../providers";
 import { AppIcon } from "../../shared/ui/AppIcon";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../shared/ui/dialog";
 import { ThemePicker } from "../../shared/ui/ThemePicker";
@@ -54,7 +54,7 @@ export function Settings() {
     clearActiveDownloads,
     clearDisabledMods,
     clearUnpinnedMods,
-  } = useFunkHub();
+  } = useFresh();
   const [gameDirectory, setGameDirectory] = useState(settings.gameDirectory);
   const [downloadsDirectory, setDownloadsDirectory] = useState(settings.downloadsDirectory);
   const [dataRootDirectory, setDataRootDirectory] = useState(settings.dataRootDirectory);
@@ -990,5 +990,6 @@ export function Settings() {
     </div>
   );
 }
+
 
 

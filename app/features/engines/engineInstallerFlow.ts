@@ -1,5 +1,5 @@
-import type { EngineDefinition, EngineRelease } from "../../services/funkhub";
-import type { ClientPlatform } from "../../services/funkhub/platform";
+import type { EngineDefinition, EngineRelease } from "../../services/fresh";
+import type { ClientPlatform } from "../../services/fresh/platform";
 
 export interface EngineInstallPackage extends EngineRelease {
   channelKey: string;
@@ -259,3 +259,4 @@ export function buildPackageOptions(packages: EngineInstallPackage[], releaseKey
 export function getPrimaryEnginePackage(engine: EngineDefinition, currentPlatform: ClientPlatform): EngineInstallPackage | undefined {
   return buildEngineInstallPackages(engine, currentPlatform)[0];
 }
+

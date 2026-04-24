@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Fresh",
+  "productName": "Fresh!",
   "version": "0.1.0",
   "identifier": "com.fresh.desktop",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Fresh",
+        "title": "Fresh!",
         "width": 1440,
         "height": 900,
         "minWidth": 1100,
@@ -45,10 +45,10 @@
     "deep-link": {
       "desktop": {
         "schemes": [
-          "fresh",
-          "funkhub"
+          "fresh"
         ]
       }
     }
   }
 }
+

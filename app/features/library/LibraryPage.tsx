@@ -2,10 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Play, RefreshCw, Trash2, FolderPlus, FolderOpen, ChevronLeft, ChevronRight, ChevronDown, Settings2, Square, ImagePlus, Eye, EyeOff, Search, Layers, Tag, X, Check, Plus, Pin, Copy, RotateCcw, ExternalLink, FileText, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { useFunkHub, useI18n } from "../../providers";
+import { useFresh, useI18n } from "../../providers";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../shared/ui/dialog";
 import { Checkbox } from "../../shared/ui/checkbox";
-import { formatEngineName, type EngineSlug } from "../../services/funkhub";
+import { formatEngineName, type EngineSlug } from "../../services/fresh";
 import { getEngineIcon } from "../engines/engineIcons";
 
 type SortBy = "newest" | "oldest" | "name" | "nameDesc" | "engine" | "updates";
@@ -36,7 +36,7 @@ export function Library() {
     renameInstalledMod,
     openExternalUrl,
     detectWineRuntimes,
-  } = useFunkHub();
+  } = useFresh();
   const [selectedModId, setSelectedModId] = useState(installedMods[0]?.id);
   const [sidebarSearch, setSidebarSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>("newest");
@@ -1348,3 +1348,4 @@ export function Library() {
     </div>
   );
 }
+

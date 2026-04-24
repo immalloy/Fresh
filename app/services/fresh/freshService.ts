@@ -4,7 +4,7 @@ import { gameBananaApiService } from "./gamebananaApi";
 import { modInstallerService } from "./installer";
 import { detectClientPlatform, pickBestReleaseForPlatform } from "./platform";
 import { checkLatestAppUpdate } from "./appUpdate";
-import { DEFAULT_SETTINGS, funkHubStorageService } from "./storage";
+import { DEFAULT_SETTINGS, freshStorageService } from "./storage";
 import {
   AppUpdateInfo,
   CategoryNode,
@@ -14,7 +14,7 @@ import {
   EngineHealth,
   EngineSlug,
   EngineUpdateInfo,
-  FunkHubSettings,
+  FreshSettings,
   GameBananaModProfile,
   GameBananaModSummary,
   InstallOptions,
@@ -83,11 +83,11 @@ function sanitizePathSegment(value: string): string {
   return value.trim().toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "latest";
 }
 
-function mergeSettings(base: FunkHubSettings, patch?: Partial<FunkHubSettings>): FunkHubSettings {
+function mergeSettings(base: FreshSettings, patch?: Partial<FreshSettings>): FreshSettings {
   const next = {
     ...base,
     ...(patch || {}),
-  } as FunkHubSettings;
+  } as FreshSettings;
 
   next.gameBananaIntegration = {
     ...base.gameBananaIntegration,
@@ -102,7 +102,7 @@ function mergeSettings(base: FunkHubSettings, patch?: Partial<FunkHubSettings>):
   return next;
 }
 
-export class FunkHubService {
+export class FreshService {
   private installedMods: InstalledMod[] = [];
 
   private installedEngines: InstalledEngine[] = [];
@@ -113,7 +113,7 @@ export class FunkHubService {
 
   private engineUpdateCache: EngineUpdateInfo[] = [];
 
-  private settings: FunkHubSettings;
+  private settings: FreshSettings;
 
   private engineHealthCache = new Map<string, { health: EngineHealth; message?: string }>();
 
@@ -124,43 +124,43 @@ export class FunkHubService {
   private desktopAppUpdateStatus: DesktopAppUpdateStatus | undefined;
 
   constructor() {
-    this.settings = funkHubStorageService.getSettings();
-    this.installedMods = funkHubStorageService.getInstalledMods();
-    const storedEngines = funkHubStorageService.getInstalledEngines();
+    this.settings = freshStorageService.getSettings();
+    this.installedMods = freshStorageService.getInstalledMods();
+    const storedEngines = freshStorageService.getInstalledEngines();
     this.installedEngines = storedEngines.filter((engine) => !(
       engine.slug === "psych"
       && engine.version === "latest"
       && engine.installPath === "engines/psych"
       && engine.modsPath === "engines/psych/mods"
     ));
-    this.downloadHistory = funkHubStorageService.getDownloadHistory();
+    this.downloadHistory = freshStorageService.getDownloadHistory();
     downloadManager.setMaxConcurrent(this.settings.maxConcurrentDownloads);
 
     if (storedEngines.length !== this.installedEngines.length) {
-      funkHubStorageService.saveInstalledEngines(this.installedEngines);
+      freshStorageService.saveInstalledEngines(this.installedEngines);
     }
 
     this.setupDesktopProgressBridge();
     this.setupDesktopAppUpdateBridge();
   }
 
-  getSettings(): FunkHubSettings {
+  getSettings(): FreshSettings {
     return { ...this.settings };
   }
 
-  async syncDesktopSettings(): Promise<FunkHubSettings> {
-    if (!window.funkhubDesktop?.getSettings) {
+  async syncDesktopSettings(): Promise<FreshSettings> {
+    if (!window.freshDesktop?.getSettings) {
       return this.getSettings();
     }
 
     try {
-      const runtimeSettings = await window.funkhubDesktop.getSettings();
+      const runtimeSettings = await window.freshDesktop.getSettings();
       this.settings = mergeSettings(
         mergeSettings(DEFAULT_SETTINGS, this.settings),
         runtimeSettings,
       );
       downloadManager.setMaxConcurrent(this.settings.maxConcurrentDownloads);
-      funkHubStorageService.saveSettings(this.settings);
+      freshStorageService.saveSettings(this.settings);
     } catch {
       // Keep local settings if desktop runtime settings are unavailable.
     }
@@ -168,17 +168,17 @@ export class FunkHubService {
     return this.getSettings();
   }
 
-  async updateSettings(patch: Partial<FunkHubSettings>): Promise<FunkHubSettings> {
-    const nextSettings: FunkHubSettings = mergeSettings(this.settings, patch);
+  async updateSettings(patch: Partial<FreshSettings>): Promise<FreshSettings> {
+    const nextSettings: FreshSettings = mergeSettings(this.settings, patch);
 
     nextSettings.maxConcurrentDownloads = Math.max(
       1,
       Number(nextSettings.maxConcurrentDownloads) || DEFAULT_SETTINGS.maxConcurrentDownloads,
     );
 
-    if (window.funkhubDesktop?.updateSettings) {
+    if (window.freshDesktop?.updateSettings) {
       try {
-        const runtimeSettings = await window.funkhubDesktop.updateSettings(nextSettings);
+        const runtimeSettings = await window.freshDesktop.updateSettings(nextSettings);
         this.settings = mergeSettings(
           mergeSettings(DEFAULT_SETTINGS, nextSettings),
           runtimeSettings,
@@ -191,16 +191,16 @@ export class FunkHubService {
     }
 
     downloadManager.setMaxConcurrent(this.settings.maxConcurrentDownloads);
-    funkHubStorageService.saveSettings(this.settings);
+    freshStorageService.saveSettings(this.settings);
     return this.getSettings();
   }
 
   async pickFolder(options?: { title?: string; defaultPath?: string }): Promise<string | undefined> {
-    if (!window.funkhubDesktop?.pickFolder) {
+    if (!window.freshDesktop?.pickFolder) {
       return undefined;
     }
 
-    const result = await window.funkhubDesktop.pickFolder(options);
+    const result = await window.freshDesktop.pickFolder(options);
     if (result.canceled) {
       return undefined;
     }
@@ -209,11 +209,11 @@ export class FunkHubService {
   }
 
   async pickFile(options?: { title?: string; defaultPath?: string; filters?: Array<{ name: string; extensions: string[] }> }): Promise<string | undefined> {
-    if (!window.funkhubDesktop?.pickFile) {
+    if (!window.freshDesktop?.pickFile) {
       return undefined;
     }
 
-    const result = await window.funkhubDesktop.pickFile(options);
+    const result = await window.freshDesktop.pickFile(options);
     if (result.canceled) {
       return undefined;
     }
@@ -225,10 +225,10 @@ export class FunkHubService {
     if (!targetPath.trim()) {
       throw new Error("No folder path configured");
     }
-    if (!window.funkhubDesktop?.openAnyPath) {
+    if (!window.freshDesktop?.openAnyPath) {
       throw new Error("Desktop bridge unavailable for opening folders");
     }
-    const result = await window.funkhubDesktop.openAnyPath({ targetPath: targetPath.trim() });
+    const result = await window.freshDesktop.openAnyPath({ targetPath: targetPath.trim() });
     if (!result.ok) {
       throw new Error(result.error || "Failed to open folder");
     }
@@ -243,8 +243,8 @@ export class FunkHubService {
       throw new Error("Only http/https URLs are supported");
     }
 
-    if (window.funkhubDesktop?.openExternalUrl) {
-      const result = await window.funkhubDesktop.openExternalUrl({ url: target });
+    if (window.freshDesktop?.openExternalUrl) {
+      const result = await window.freshDesktop.openExternalUrl({ url: target });
       if (!result.ok) {
         throw new Error(result.error || "Failed to open URL");
       }
@@ -271,8 +271,8 @@ export class FunkHubService {
 
     const platform = detectClientPlatform();
 
-    if (window.funkhubDesktop?.checkAppUpdate && (platform === "windows" || platform === "macos")) {
-      const result = await window.funkhubDesktop.checkAppUpdate();
+    if (window.freshDesktop?.checkAppUpdate && (platform === "windows" || platform === "macos")) {
+      const result = await window.freshDesktop.checkAppUpdate();
       if (result.ok && result.info) {
         return result.info;
       }
@@ -291,35 +291,35 @@ export class FunkHubService {
   }
 
   async downloadAppUpdate(): Promise<void> {
-    if (!window.funkhubDesktop?.downloadAppUpdate) {
+    if (!window.freshDesktop?.downloadAppUpdate) {
       throw new Error("Desktop auto updater is unavailable");
     }
 
-    const result = await window.funkhubDesktop.downloadAppUpdate();
+    const result = await window.freshDesktop.downloadAppUpdate();
     if (!result.ok) {
       throw new Error(result.error || "Failed to download app update");
     }
   }
 
   async installAppUpdate(): Promise<void> {
-    if (!window.funkhubDesktop?.installAppUpdate) {
+    if (!window.freshDesktop?.installAppUpdate) {
       throw new Error("Desktop auto updater is unavailable");
     }
 
-    const result = await window.funkhubDesktop.installAppUpdate();
+    const result = await window.freshDesktop.installAppUpdate();
     if (!result.ok) {
       throw new Error(result.error || "Failed to install app update");
     }
   }
 
   async reconcileDiskState(): Promise<void> {
-    if (!window.funkhubDesktop?.inspectPath) {
+    if (!window.freshDesktop?.inspectPath) {
       return;
     }
 
     const staleEngineIds = new Set<string>();
     for (const engine of this.installedEngines) {
-      const check = await window.funkhubDesktop.inspectPath({ targetPath: engine.installPath });
+      const check = await window.freshDesktop.inspectPath({ targetPath: engine.installPath });
       if (!check.ok || !check.exists || !check.isDirectory) {
         staleEngineIds.add(engine.id);
       }
@@ -333,14 +333,14 @@ export class FunkHubService {
           isDefault: index === 0,
         }));
       }
-      funkHubStorageService.saveInstalledEngines(this.installedEngines);
+      freshStorageService.saveInstalledEngines(this.installedEngines);
     }
 
     const validEnginePaths = this.installedEngines.map((engine) => engine.installPath);
     const nextMods: InstalledMod[] = [];
 
     for (const mod of this.installedMods) {
-      const check = await window.funkhubDesktop.inspectPath({ targetPath: mod.installPath });
+      const check = await window.freshDesktop.inspectPath({ targetPath: mod.installPath });
       const orphanedByEngine = mod.installPath.startsWith("engines/")
         && !validEnginePaths.some((enginePath) => mod.installPath.startsWith(enginePath));
       if (!check.ok || !check.exists || orphanedByEngine) {
@@ -351,22 +351,22 @@ export class FunkHubService {
 
     if (nextMods.length !== this.installedMods.length) {
       this.installedMods = nextMods;
-      funkHubStorageService.saveInstalledMods(this.installedMods);
+      freshStorageService.saveInstalledMods(this.installedMods);
     }
   }
 
   async getItchAuthStatus(): Promise<{ connected: boolean; connectedAt?: number; scopes?: string[] }> {
-    if (!window.funkhubDesktop?.getItchAuthStatus) {
+    if (!window.freshDesktop?.getItchAuthStatus) {
       return { connected: false };
     }
-    return window.funkhubDesktop.getItchAuthStatus();
+    return window.freshDesktop.getItchAuthStatus();
   }
 
   async connectItchOAuth(clientId: string): Promise<void> {
-    if (!window.funkhubDesktop?.startItchOAuth) {
+    if (!window.freshDesktop?.startItchOAuth) {
       throw new Error("Desktop bridge unavailable for itch OAuth");
     }
-    await window.funkhubDesktop.startItchOAuth({
+    await window.freshDesktop.startItchOAuth({
       clientId,
       scopes: ["profile:me", "profile:owned"],
       redirectPort: 34567,
@@ -374,18 +374,18 @@ export class FunkHubService {
   }
 
   async disconnectItchOAuth(): Promise<void> {
-    if (!window.funkhubDesktop?.clearItchAuth) {
+    if (!window.freshDesktop?.clearItchAuth) {
       return;
     }
-    await window.funkhubDesktop.clearItchAuth();
+    await window.freshDesktop.clearItchAuth();
   }
 
   private setupDesktopProgressBridge(): void {
-    if (!window.funkhubDesktop?.onInstallProgress) {
+    if (!window.freshDesktop?.onInstallProgress) {
       return;
     }
 
-    this.desktopProgressUnsubscribe = window.funkhubDesktop.onInstallProgress((payload) => {
+    this.desktopProgressUnsubscribe = window.freshDesktop.onInstallProgress((payload) => {
       const existing = this.downloadHistory.find((task) => task.id === payload.jobId);
       if (!existing) {
         return;
@@ -412,11 +412,11 @@ export class FunkHubService {
   }
 
   private setupDesktopAppUpdateBridge(): void {
-    if (!window.funkhubDesktop?.onAppUpdateStatus) {
+    if (!window.freshDesktop?.onAppUpdateStatus) {
       return;
     }
 
-    this.desktopAppUpdateUnsubscribe = window.funkhubDesktop.onAppUpdateStatus((payload) => {
+    this.desktopAppUpdateUnsubscribe = window.freshDesktop.onAppUpdateStatus((payload) => {
       this.desktopAppUpdateStatus = payload;
     });
   }
@@ -424,7 +424,7 @@ export class FunkHubService {
   subscribeDownloads(listener: (tasks: DownloadTask[]) => void): () => void {
     return downloadManager.subscribe((tasks) => {
       this.downloadHistory = tasks;
-      funkHubStorageService.saveDownloadHistory(tasks);
+      freshStorageService.saveDownloadHistory(tasks);
       listener(tasks);
     });
   }
@@ -447,9 +447,9 @@ export class FunkHubService {
       : this.installedEngines;
 
     for (const engine of targets) {
-      if (window.funkhubDesktop?.inspectEngineInstall) {
+      if (window.freshDesktop?.inspectEngineInstall) {
         try {
-          const result = await window.funkhubDesktop.inspectEngineInstall({ installPath: engine.installPath });
+          const result = await window.freshDesktop.inspectEngineInstall({ installPath: engine.installPath });
           this.engineHealthCache.set(engine.id, {
             health: result.health,
             message: result.message,
@@ -514,7 +514,7 @@ export class FunkHubService {
       ...engine,
       updateAvailable: flagged.has(engine.id),
     }));
-    funkHubStorageService.saveInstalledEngines(this.installedEngines);
+    freshStorageService.saveInstalledEngines(this.installedEngines);
 
     return this.engineUpdateCache;
   }
@@ -523,9 +523,9 @@ export class FunkHubService {
     const catalog = await engineCatalogService.getEngineCatalog();
     const basegame = catalog.find((entry) => entry.slug === "basegame");
 
-    if (basegame && window.funkhubDesktop?.listItchBaseGameReleases) {
+    if (basegame && window.freshDesktop?.listItchBaseGameReleases) {
       try {
-        const itch = await window.funkhubDesktop.listItchBaseGameReleases();
+        const itch = await window.freshDesktop.listItchBaseGameReleases();
         if (itch.ok && itch.releases.length > 0) {
           const dynamic = itch.releases.map((release) => ({
             platform: release.platform,
@@ -565,7 +565,7 @@ export class FunkHubService {
     let resolvedFileName = `${input.slug}-${input.releaseVersion}.zip`;
 
     if (input.slug === "basegame" && input.releaseUrl.startsWith("itch://")) {
-      if (!window.funkhubDesktop?.resolveItchBaseGameDownload) {
+      if (!window.freshDesktop?.resolveItchBaseGameDownload) {
         throw new Error("Desktop bridge unavailable for itch.io base game resolution");
       }
 
@@ -578,7 +578,7 @@ export class FunkHubService {
       const uploadIdMatch = input.releaseUrl.match(/^itch:\/\/upload\/(\d+)$/);
       const uploadId = uploadIdMatch ? Number(uploadIdMatch[1]) : undefined;
 
-      const itch = await window.funkhubDesktop.resolveItchBaseGameDownload({
+      const itch = await window.freshDesktop.resolveItchBaseGameDownload({
         platform: itchPlatform,
         uploadId,
       });
@@ -607,8 +607,8 @@ export class FunkHubService {
           priority: 10,
         },
         cancel: () => {
-          if (window.funkhubDesktop) {
-            window.funkhubDesktop.cancelInstall({ jobId }).catch(() => undefined);
+          if (window.freshDesktop) {
+            window.freshDesktop.cancelInstall({ jobId }).catch(() => undefined);
           }
         },
         run: async (task, update) => {
@@ -620,8 +620,8 @@ export class FunkHubService {
               message: `Preparing ${input.slug} engine install`,
             });
 
-            if (window.funkhubDesktop) {
-              await window.funkhubDesktop.installEngine({
+            if (window.freshDesktop) {
+              await window.freshDesktop.installEngine({
                 jobId,
                 mode: "engine",
                 fileName: taskName,
@@ -658,8 +658,8 @@ export class FunkHubService {
     });
   }
 
-  async getFunkHubCategories(): Promise<CategoryNode[]> {
-    return gameBananaApiService.getFunkHubCategories();
+  async getFreshCategories(): Promise<CategoryNode[]> {
+    return gameBananaApiService.getFreshCategories();
   }
 
   async getTrendingMods(): Promise<GameBananaModSummary[]> {
@@ -739,7 +739,7 @@ export class FunkHubService {
         latestVersion: update?.latestVersion,
       };
     });
-    funkHubStorageService.saveInstalledMods(this.installedMods);
+    freshStorageService.saveInstalledMods(this.installedMods);
 
     return this.updateCache;
   }
@@ -779,7 +779,7 @@ export class FunkHubService {
 
     if (changed) {
       this.installedMods = next;
-      funkHubStorageService.saveInstalledMods(this.installedMods);
+      freshStorageService.saveInstalledMods(this.installedMods);
     }
   }
 
@@ -797,7 +797,7 @@ export class FunkHubService {
     };
 
     this.installedEngines = [engine, ...this.installedEngines.map((item) => ({ ...item }))];
-    funkHubStorageService.saveInstalledEngines(this.installedEngines);
+    freshStorageService.saveInstalledEngines(this.installedEngines);
     return engine;
   }
 
@@ -841,8 +841,8 @@ export class FunkHubService {
       throw new Error("Engine installation not found");
     }
 
-    if (window.funkhubDesktop?.deletePath) {
-      const result = await window.funkhubDesktop.deletePath({ targetPath: installed.installPath });
+    if (window.freshDesktop?.deletePath) {
+      const result = await window.freshDesktop.deletePath({ targetPath: installed.installPath });
       if (!result.ok) {
         throw new Error(result.error || "Failed to remove engine files");
       }
@@ -860,8 +860,8 @@ export class FunkHubService {
       }));
     }
 
-    funkHubStorageService.saveInstalledEngines(this.installedEngines);
-    funkHubStorageService.saveInstalledMods(this.installedMods);
+    freshStorageService.saveInstalledEngines(this.installedEngines);
+    freshStorageService.saveInstalledMods(this.installedMods);
   }
 
   setDefaultEngine(engineId: string): void {
@@ -873,63 +873,63 @@ export class FunkHubService {
       ...engine,
       isDefault: engine.id === engineId,
     }));
-    funkHubStorageService.saveInstalledEngines(this.installedEngines);
+    freshStorageService.saveInstalledEngines(this.installedEngines);
   }
 
   renameEngine(engineId: string, name: string): void {
     this.installedEngines = this.installedEngines.map((engine) =>
       engine.id === engineId ? { ...engine, customName: name.trim() || undefined } : engine,
     );
-    funkHubStorageService.saveInstalledEngines(this.installedEngines);
+    freshStorageService.saveInstalledEngines(this.installedEngines);
   }
 
   setEngineCustomIcon(engineId: string, iconUrl?: string): void {
     this.installedEngines = this.installedEngines.map((engine) =>
       engine.id === engineId ? { ...engine, customIconUrl: iconUrl?.trim() || undefined } : engine,
     );
-    funkHubStorageService.saveInstalledEngines(this.installedEngines);
+    freshStorageService.saveInstalledEngines(this.installedEngines);
   }
 
   setModCustomImage(installedId: string, imageUrl?: string): void {
     this.installedMods = this.installedMods.map((mod) =>
       mod.id === installedId ? { ...mod, thumbnailUrl: imageUrl?.trim() || undefined } : mod,
     );
-    funkHubStorageService.saveInstalledMods(this.installedMods);
+    freshStorageService.saveInstalledMods(this.installedMods);
   }
 
   setModEnabled(installedId: string, enabled: boolean): void {
     this.installedMods = this.installedMods.map((mod) =>
       mod.id === installedId ? { ...mod, enabled } : mod,
     );
-    funkHubStorageService.saveInstalledMods(this.installedMods);
+    freshStorageService.saveInstalledMods(this.installedMods);
   }
 
   setModTags(installedId: string, tags: string[]): void {
     this.installedMods = this.installedMods.map((mod) =>
       mod.id === installedId ? { ...mod, tags: tags.length > 0 ? tags : undefined } : mod,
     );
-    funkHubStorageService.saveInstalledMods(this.installedMods);
+    freshStorageService.saveInstalledMods(this.installedMods);
   }
 
   setModPinned(installedId: string, pinned: boolean): void {
     this.installedMods = this.installedMods.map((mod) =>
       mod.id === installedId ? { ...mod, pinned: pinned || undefined } : mod,
     );
-    funkHubStorageService.saveInstalledMods(this.installedMods);
+    freshStorageService.saveInstalledMods(this.installedMods);
   }
 
   setModNotes(installedId: string, notes: string): void {
     this.installedMods = this.installedMods.map((mod) =>
       mod.id === installedId ? { ...mod, notes: notes.trim() || undefined } : mod,
     );
-    funkHubStorageService.saveInstalledMods(this.installedMods);
+    freshStorageService.saveInstalledMods(this.installedMods);
   }
 
   renameInstalledMod(installedId: string, newName: string): void {
     this.installedMods = this.installedMods.map((mod) =>
       mod.id === installedId ? { ...mod, modName: newName } : mod,
     );
-    funkHubStorageService.saveInstalledMods(this.installedMods);
+    freshStorageService.saveInstalledMods(this.installedMods);
   }
 
   async removeInstalledMod(installedId: string, options?: { deleteFiles?: boolean }): Promise<void> {
@@ -938,8 +938,8 @@ export class FunkHubService {
       return;
     }
 
-    if (options?.deleteFiles && window.funkhubDesktop?.deletePath) {
-      const result = await window.funkhubDesktop.deletePath({ targetPath: installed.installPath });
+    if (options?.deleteFiles && window.freshDesktop?.deletePath) {
+      const result = await window.freshDesktop.deletePath({ targetPath: installed.installPath });
       if (!result.ok) {
         throw new Error(result.error || "Failed to remove mod files");
       }
@@ -947,7 +947,7 @@ export class FunkHubService {
 
     this.installedMods = this.installedMods.filter((mod) => mod.id !== installedId);
     this.updateCache = this.updateCache.filter((update) => update.installedId !== installedId);
-    funkHubStorageService.saveInstalledMods(this.installedMods);
+    freshStorageService.saveInstalledMods(this.installedMods);
   }
 
   async launchInstalledMod(installedId: string): Promise<void> {
@@ -964,12 +964,12 @@ export class FunkHubService {
       throw new Error("No engine installation found");
     }
 
-    if (!window.funkhubDesktop?.launchEngine) {
+    if (!window.freshDesktop?.launchEngine) {
       throw new Error("Desktop bridge unavailable for launching");
     }
 
     if (installed.standalone || installed.installPath.startsWith("executables")) {
-      await window.funkhubDesktop.launchEngine({
+      await window.freshDesktop.launchEngine({
         installPath: installed.installPath,
         launcher: installed.launcher,
         launcherPath: installed.launcherPath,
@@ -987,7 +987,7 @@ export class FunkHubService {
       launchArgs = [modFolderName];
     }
 
-    await window.funkhubDesktop.launchEngine({ installPath: engine.installPath, args: launchArgs, launchId: installedId });
+    await window.freshDesktop.launchEngine({ installPath: engine.installPath, args: launchArgs, launchId: installedId });
   }
 
   async updateInstalledModLaunchOptions(
@@ -1016,7 +1016,7 @@ export class FunkHubService {
           }
         : mod
     ));
-    funkHubStorageService.saveInstalledMods(this.installedMods);
+    freshStorageService.saveInstalledMods(this.installedMods);
   }
 
   async launchEngine(
@@ -1032,11 +1032,11 @@ export class FunkHubService {
       throw new Error("Engine installation not found");
     }
 
-    if (!window.funkhubDesktop?.launchEngine) {
+    if (!window.freshDesktop?.launchEngine) {
       throw new Error("Desktop bridge unavailable for launching");
     }
 
-    await window.funkhubDesktop.launchEngine({
+    await window.freshDesktop.launchEngine({
       installPath: engine.installPath,
       launcher: options?.launcher,
       launcherPath: options?.launcherPath,
@@ -1051,11 +1051,11 @@ export class FunkHubService {
       throw new Error("Engine installation not found");
     }
 
-    if (!window.funkhubDesktop?.openPath) {
+    if (!window.freshDesktop?.openPath) {
       throw new Error("Desktop bridge unavailable for folder management");
     }
 
-    const result = await window.funkhubDesktop.openPath({ targetPath: engine.installPath });
+    const result = await window.freshDesktop.openPath({ targetPath: engine.installPath });
     if (!result.ok) {
       throw new Error(result.error || "Failed to open engine folder");
     }
@@ -1067,11 +1067,11 @@ export class FunkHubService {
       throw new Error("Engine installation not found");
     }
 
-    if (!window.funkhubDesktop?.openPath) {
+    if (!window.freshDesktop?.openPath) {
       throw new Error("Desktop bridge unavailable for folder management");
     }
 
-    const result = await window.funkhubDesktop.openPath({ targetPath: engine.modsPath });
+    const result = await window.freshDesktop.openPath({ targetPath: engine.modsPath });
     if (!result.ok) {
       throw new Error(result.error || "Failed to open engine mods folder");
     }
@@ -1083,11 +1083,11 @@ export class FunkHubService {
       throw new Error("Engine import cancelled");
     }
 
-    if (!window.funkhubDesktop?.importEngineFolder) {
+    if (!window.freshDesktop?.importEngineFolder) {
       throw new Error("Desktop bridge unavailable for import");
     }
 
-    const result = await window.funkhubDesktop.importEngineFolder({
+    const result = await window.freshDesktop.importEngineFolder({
       sourcePath,
       slug: input.slug,
       version: input.versionHint,
@@ -1109,7 +1109,7 @@ export class FunkHubService {
   }
 
   async scanInstalledEngineModFolders(): Promise<number> {
-    if (!window.funkhubDesktop?.listDirectory || !window.funkhubDesktop?.inspectPath) {
+    if (!window.freshDesktop?.listDirectory || !window.freshDesktop?.inspectPath) {
       return 0;
     }
 
@@ -1117,12 +1117,12 @@ export class FunkHubService {
     const knownPaths = new Set(this.installedMods.map((mod) => mod.installPath));
 
     for (const engine of this.installedEngines) {
-      const modsPathCheck = await window.funkhubDesktop.inspectPath({ targetPath: engine.modsPath });
+      const modsPathCheck = await window.freshDesktop.inspectPath({ targetPath: engine.modsPath });
       if (!modsPathCheck.ok || !modsPathCheck.exists || !modsPathCheck.isDirectory) {
         continue;
       }
 
-      const listed = await window.funkhubDesktop.listDirectory({ targetPath: engine.modsPath, directoriesOnly: true });
+      const listed = await window.freshDesktop.listDirectory({ targetPath: engine.modsPath, directoriesOnly: true });
       if (!listed.ok) {
         continue;
       }
@@ -1160,7 +1160,7 @@ export class FunkHubService {
     }
 
     if (added > 0) {
-      funkHubStorageService.saveInstalledMods(this.installedMods);
+      freshStorageService.saveInstalledMods(this.installedMods);
     }
 
     return added;
@@ -1196,13 +1196,13 @@ export class FunkHubService {
       throw new Error("Mod import cancelled");
     }
 
-    if (!window.funkhubDesktop?.importModFolder) {
+    if (!window.freshDesktop?.importModFolder) {
       throw new Error("Desktop bridge unavailable for manual mod import");
     }
 
     const installSubdir = sanitizePathSegment(`${modName}-${Date.now()}`);
     const targetModsPath = standalone ? "executables/manual" : engine!.modsPath;
-    const result = await window.funkhubDesktop.importModFolder({
+    const result = await window.freshDesktop.importModFolder({
       sourcePath,
       targetModsPath,
       installSubdir,
@@ -1242,7 +1242,7 @@ export class FunkHubService {
     };
 
     this.installedMods = [record, ...this.installedMods];
-    funkHubStorageService.saveInstalledMods(this.installedMods);
+    freshStorageService.saveInstalledMods(this.installedMods);
     return record;
   }
 
@@ -1260,15 +1260,15 @@ export class FunkHubService {
   cancelDownload(taskId: string): void {
     const task = this.downloadHistory.find((entry) => entry.id === taskId);
     downloadManager.cancel(taskId);
-    if (window.funkhubDesktop && task) {
-      window.funkhubDesktop.cancelInstall({ jobId: task.id }).catch(() => undefined);
+    if (window.freshDesktop && task) {
+      window.freshDesktop.cancelInstall({ jobId: task.id }).catch(() => undefined);
     }
   }
 
   clearDownloadHistory(): void {
     downloadManager.clearHistory();
     this.downloadHistory = downloadManager.getTasks();
-    funkHubStorageService.saveDownloadHistory(this.downloadHistory);
+    freshStorageService.saveDownloadHistory(this.downloadHistory);
   }
 
   private queueInstallTask(input: {
@@ -1348,7 +1348,7 @@ export class FunkHubService {
           message: "Starting download",
         });
 
-        if (window.funkhubDesktop) {
+        if (window.freshDesktop) {
           const request = modInstallerService.createDesktopInstallRequest({
             jobId: task.id,
             plan,
@@ -1366,7 +1366,7 @@ export class FunkHubService {
           });
 
           this.installedMods = [installedMod, ...this.installedMods];
-          funkHubStorageService.saveInstalledMods(this.installedMods);
+          freshStorageService.saveInstalledMods(this.installedMods);
 
           update({
             ...task,
@@ -1422,7 +1422,7 @@ export class FunkHubService {
           installedEngine: selectedEngine?.slug,
         });
         this.installedMods = [installedMod, ...this.installedMods];
-        funkHubStorageService.saveInstalledMods(this.installedMods);
+        freshStorageService.saveInstalledMods(this.installedMods);
 
         update({
           ...task,
@@ -1468,6 +1468,8 @@ export class FunkHubService {
   }
 }
 
-export const funkHubService = new FunkHubService();
+export const freshService = new FreshService();
+
+
 
 

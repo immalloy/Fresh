@@ -1,6 +1,6 @@
 # Release Notes and Changelog Guide
 
-This document explains how to create release notes and maintain the changelog for FunkHub.
+This document explains how to create release notes and maintain the changelog for Fresh!.
 
 ---
 
@@ -11,7 +11,7 @@ Release notes are written for users and should be friendly, easy to read, and hi
 ### Format
 
 ```markdown
-## FunkHub v0.X.X - Codename
+## Fresh! v0.X.X - Codename
 
 <img width="1138" height="640" alt="image" src="https://github.com/user-attachments/assets/ea5ae499-37db-479f-ba4e-de38c9e58932" />
 
@@ -36,7 +36,7 @@ Brief description of what this release brings.
 
 ### Compare
 
-https://github.com/Crew-Awesome/FunkHub/compare/v0.X.Y...v0.X.Z
+https://github.com/Crew-Awesome/Fresh!/compare/v0.X.Y...v0.X.Z
 ```
 
 ### Rules
@@ -47,7 +47,7 @@ https://github.com/Crew-Awesome/FunkHub/compare/v0.X.Y...v0.X.Z
 4. Use title case for feature names in Highlights
 5. Image URL is always the same: `https://github.com/user-attachments/assets/ea5ae499-37db-479f-ba4e-de38c9e58932`
 6. Keep descriptions short and user-friendly
-7. Compare URL format: `https://github.com/Crew-Awesome/FunkHub/compare/v{previous}...v{current}`
+7. Compare URL format: `https://github.com/Crew-Awesome/Fresh!/compare/v{previous}...v{current}`
 
 ### Codenames
 
@@ -215,7 +215,7 @@ git diff v0.4.0..HEAD --stat
 git diff v0.4.0..HEAD -- app/services/ app/features/ app/providers/ electron/
 
 # Get changes to specific file
-git diff v0.4.0..HEAD -- app/services/funkhub/funkhubService.ts
+git diff v0.4.0..HEAD -- app/services/fresh/freshService.ts
 ```
 
 ### Step 4: Analyze Specific Features
@@ -307,7 +307,7 @@ git diff v0.4.0..HEAD -- app/     # App changes only
 git diff v0.4.0..HEAD -- electron/ # Desktop changes only
 
 # Check specific files
-git diff v0.4.0..HEAD -- app/services/funkhub/types.ts
+git diff v0.4.0..HEAD -- app/services/fresh/types.ts
 git diff v0.4.0..HEAD -- app/features/library/LibraryPage.tsx
 ```
 
@@ -319,3 +319,5 @@ git diff v0.4.0..HEAD -- app/features/library/LibraryPage.tsx
 4. Focus on user-facing changes in release notes
 5. Include infrastructure changes in changelog but not release notes
 6. Use present tense for Added, past tense for Fixed
+
+

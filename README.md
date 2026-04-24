@@ -1,6 +1,6 @@
-# Fresh
+# Fresh!
 
-Fresh is a desktop launcher built with React and Tauri 2.
+Fresh! is a desktop launcher built with React and Tauri 2.
 
 ## Prerequisites
 
@@ -39,3 +39,4 @@ npm run build:desktop:linux
 npm run build:desktop:win
 npm run build:desktop:mac
 ```
+

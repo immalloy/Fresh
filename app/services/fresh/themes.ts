@@ -271,8 +271,8 @@ function createFocusColors(primary: string, _background: string): ThemeDefinitio
 
 export const THEMES: ThemeDefinition[] = [
   {
-    id: "funkhub",
-    name: "Funkhub",
+    id: "fresh",
+    name: "Fresh",
     hue: "25",
     colors: {
       light: createLightColors("#E8743B", "#FAF8F5"),
@@ -451,3 +451,4 @@ export const THEMES: ThemeDefinition[] = [
 export function getThemeById(id: string): ThemeDefinition {
   return THEMES.find((t) => t.id === id) || THEMES[0];
 }
+

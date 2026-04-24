@@ -2,7 +2,7 @@ export const FNF_GAME_ID = 8694;
 
 export const FNF_CATEGORY_IDS = [3827, 29202, 34764, 28367, 44037, 43850, 44036, 43798] as const;
 
-export type FunkHubCategoryId = (typeof FNF_CATEGORY_IDS)[number];
+export type FreshCategoryId = (typeof FNF_CATEGORY_IDS)[number];
 
 export interface GameBananaMember {
   id: number;
@@ -230,7 +230,7 @@ export interface DesktopInstallResult {
   normalized?: boolean;
 }
 
-export interface FunkHubSettings {
+export interface FreshSettings {
   locale: string;
   gameDirectory: string;
   downloadsDirectory: string;
@@ -349,8 +349,8 @@ export interface DesktopBridge {
   checkAppUpdate: () => Promise<{ ok: boolean; info?: AppUpdateInfo; error?: string }>;
   downloadAppUpdate: () => Promise<{ ok: boolean; error?: string }>;
   installAppUpdate: () => Promise<{ ok: boolean; error?: string }>;
-  getSettings: () => Promise<Partial<FunkHubSettings>>;
-  updateSettings: (payload: Partial<FunkHubSettings>) => Promise<Partial<FunkHubSettings>>;
+  getSettings: () => Promise<Partial<FreshSettings>>;
+  updateSettings: (payload: Partial<FreshSettings>) => Promise<Partial<FreshSettings>>;
   getPendingDeepLinks: () => Promise<{ links: string[] }>;
   onDeepLink: (listener: (payload: { url: string }) => void) => () => void;
   onAppUpdateStatus: (listener: (payload: DesktopAppUpdateStatus) => void) => () => void;
@@ -512,3 +512,4 @@ export interface PagedResult<T> {
   records: T[];
   metadata: PageMetadata;
 }
+

@@ -3,9 +3,9 @@ import { Search, ChevronLeft, ChevronRight, FolderTree, ChevronDown, ChevronRigh
 import { motion, AnimatePresence } from "motion/react";
 import { useLocation, useNavigate } from "react-router";
 import { ModCard, UserProfileModal } from "../mods";
-import { useFunkHub, useI18n } from "../../providers";
-import type { CategoryNode, ContentRating, GameBananaMember, ReleaseType, SearchField, SearchSortOrder, SubfeedSort } from "../../services/funkhub";
-import { CONTENT_RATING_OPTIONS, RELEASE_TYPE_OPTIONS, SEARCH_FIELD_OPTIONS, SEARCH_SORT_OPTIONS, detectClientPlatform, getPlatformDefaults } from "../../services/funkhub";
+import { useFresh, useI18n } from "../../providers";
+import type { CategoryNode, ContentRating, GameBananaMember, ReleaseType, SearchField, SearchSortOrder, SubfeedSort } from "../../services/fresh";
+import { CONTENT_RATING_OPTIONS, RELEASE_TYPE_OPTIONS, SEARCH_FIELD_OPTIONS, SEARCH_SORT_OPTIONS, detectClientPlatform, getPlatformDefaults } from "../../services/fresh";
 import type { SupportedLocale } from "../../i18n";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../shared/ui/dialog";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "../../shared/ui/sheet";
@@ -41,7 +41,7 @@ export function Discover() {
     settings,
     updateSettings,
     browseFolder,
-  } = useFunkHub();
+  } = useFresh();
 
   const SUBFEED_SORTS: Array<{ value: SubfeedSort; label: string }> = [
     { value: "default", label: "Ripe" },
@@ -1153,3 +1153,4 @@ export function Discover() {
     </div>
   );
 }
+

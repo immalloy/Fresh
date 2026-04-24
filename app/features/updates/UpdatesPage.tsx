@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { RefreshCw, Download } from "lucide-react";
 import { toast } from "sonner";
-import { useFunkHub, useI18n } from "../../providers";
+import { useFresh, useI18n } from "../../providers";
 
 export function Updates() {
   const { t } = useI18n();
@@ -19,9 +19,9 @@ export function Updates() {
     downloadAppUpdate,
     installAppUpdate,
     appUpdateStatus,
-  } = useFunkHub();
+  } = useFresh();
 
-  const autoUpdaterSupported = Boolean(window.funkhubDesktop?.downloadAppUpdate && window.funkhubDesktop?.installAppUpdate);
+  const autoUpdaterSupported = Boolean(window.freshDesktop?.downloadAppUpdate && window.freshDesktop?.installAppUpdate);
   const isDownloadingAppUpdate = appUpdateStatus?.status === "downloading";
   const appUpdateReadyToInstall = appUpdateStatus?.status === "downloaded";
 
@@ -295,3 +295,4 @@ export function Updates() {
     </div>
   );
 }
+

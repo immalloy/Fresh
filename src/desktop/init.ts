@@ -8,7 +8,7 @@ declare global {
 }
 
 export function initDesktopBridge(): void {
-  if (typeof window === "undefined" || window.funkhubDesktop) {
+  if (typeof window === "undefined" || window.freshDesktop) {
     return;
   }
 
@@ -16,5 +16,6 @@ export function initDesktopBridge(): void {
   if (!isTauri) {
     return;
   }
-  window.funkhubDesktop = createDesktopBridge();
+  window.freshDesktop = createDesktopBridge();
 }
+

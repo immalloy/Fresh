@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { EngineSlug } from "../../services/funkhub";
+import type { EngineSlug } from "../../services/fresh";
 
 export function useEngineWizard() {
   const [installingSlug, setInstallingSlug] = useState<string | null>(null);
@@ -28,3 +28,4 @@ export function useEngineWizard() {
     resetWizard,
   };
 }
+

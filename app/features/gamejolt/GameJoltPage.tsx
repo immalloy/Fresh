@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Apple, ChevronLeft, ChevronRight, Gamepad2, Globe, Laptop, Monitor, SlidersHorizontal, Zap } from "lucide-react";
 import { motion } from "motion/react";
-import { useFunkHub, useI18n } from "../../providers";
-import { gameJoltApiService, type GameJoltGameSummary } from "../../services/funkhub/gamejoltApi";
+import { useFresh, useI18n } from "../../providers";
+import { gameJoltApiService, type GameJoltGameSummary } from "../../services/fresh/gamejoltApi";
 
 function PlatformIcons({ platforms }: { platforms?: string[] }) {
   if (!platforms || platforms.length === 0) {
@@ -36,7 +36,7 @@ function PlatformIcons({ platforms }: { platforms?: string[] }) {
 
 export function GameJolt() {
   const { t } = useI18n();
-  const { openExternalUrl } = useFunkHub();
+  const { openExternalUrl } = useFresh();
 
   const sectionOptions = [
     { value: "featured", label: t("gamejolt.sectionFeatured", "Featured") },
@@ -409,3 +409,4 @@ export function GameJolt() {
     </div>
   );
 }
+

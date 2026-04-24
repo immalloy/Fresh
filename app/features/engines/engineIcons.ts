@@ -1,4 +1,4 @@
-import type { EngineSlug } from "../../services/funkhub";
+import type { EngineSlug } from "../../services/fresh";
 import psychIcon from "../../../styles/assets/engine_psych.png";
 import basegameIcon from "../../../styles/assets/engine_basegame.png";
 import codenameIcon from "../../../styles/assets/engine_codename.png";
@@ -28,3 +28,4 @@ const iconByEngine: Record<EngineSlug, string> = {
 export function getEngineIcon(slug: EngineSlug): string | undefined {
   return iconByEngine[slug] || remoteIconUrls[slug];
 }
+

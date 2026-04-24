@@ -1,7 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { AlertCircle, ArrowLeft, CheckCircle2, Cpu, Download, FolderSearch, Loader2, Plus, Search } from "lucide-react";
-import { useFunkHub, useI18n } from "../../providers";
-import { detectClientPlatform, type EngineSlug } from "../../services/funkhub";
+import { useFresh, useI18n } from "../../providers";
+import { detectClientPlatform, type EngineSlug } from "../../services/fresh";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../shared/ui/dialog";
 import { getEngineIcon } from "./engineIcons";
 import { useEngineWizard } from "./useEngineWizard";
@@ -31,7 +31,7 @@ export function AddEngineDialog({ open, onOpenChange }: AddEngineDialogProps) {
     refreshEngineHealth,
     browseFolder,
     scanCommonEnginePaths,
-  } = useFunkHub();
+  } = useFresh();
   const {
     installingSlug,
     setInstallingSlug,
@@ -627,3 +627,4 @@ export function AddEngineDialog({ open, onOpenChange }: AddEngineDialogProps) {
     </Dialog>
   );
 }
+

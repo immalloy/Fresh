@@ -1,6 +1,6 @@
-# Contributing to FunkHub
+# Contributing to Fresh!
 
-Thanks for helping improve FunkHub.
+Thanks for helping improve Fresh!.
 
 ## Quick start
 
@@ -14,7 +14,7 @@ Thanks for helping improve FunkHub.
 
 - Use GitHub Issues and pick the **Bug report** template.
 - Include exact repro steps, expected result, actual result, and logs.
-- For one-click installs, include the full `funkhub://` link used.
+- For one-click installs, include the full `fresh://` link used.
 
 ## Proposing features
 
@@ -26,8 +26,8 @@ Thanks for helping improve FunkHub.
 - Keep fixes scoped to one issue when possible.
 - Prefer readable code over clever code.
 - If you touch install/deep-link logic, test both:
-  - app closed then open `funkhub://...`
-  - app already open then open `funkhub://...`
+  - app closed then open `fresh://...`
+  - app already open then open `fresh://...`
 
 ## Translation updates
 
@@ -47,3 +47,5 @@ Thanks for helping improve FunkHub.
 ## Community
 
 - Discord: https://discord.gg/cdP7JhDv4u
+
+
