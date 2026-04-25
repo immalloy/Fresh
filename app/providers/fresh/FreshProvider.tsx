@@ -62,7 +62,7 @@ interface FreshContextValue {
   refreshModUpdates: () => Promise<void>;
   getModProfile: (modId: number) => Promise<GameBananaModProfile>;
   listModsBySubmitter: (input: { submitterId: number; categoryId?: number; page?: number; perPage?: number }) => Promise<GameBananaModSummary[]>;
-  installMod: (modId: number, fileId: number, selectedEngineId?: string, priority?: number, options?: InstallOptions) => void;
+  installMod: (modId: number, fileId: number, selectedEngineId?: string, priority?: number, options?: InstallOptions) => { ok: boolean; error?: string };
   installEngine: (slug: InstalledEngine["slug"], downloadUrl: string, version: string, options?: { allowMissingExecutable?: boolean }) => Promise<void>;
   importEngineFromFolder: (slug: InstalledEngine["slug"], versionHint?: string, sourcePath?: string, customName?: string) => Promise<void>;
   updateEngine: (engineId: string) => Promise<void>;
@@ -701,8 +701,11 @@ export function FreshProvider({ children }: { children: ReactNode }) {
         try {
           freshService.queueInstall(modId, fileId, selectedEngineId, priority, options);
           toast.success(t("provider.installQueued", "Install queued — check Downloads for progress."));
+          return { ok: true };
         } catch (error) {
-          toast.error(error instanceof Error ? error.message : t("provider.unableQueueInstall", "Unable to queue install"));
+          const message = error instanceof Error ? error.message : t("provider.unableQueueInstall", "Unable to queue install");
+          toast.error(message);
+          return { ok: false, error: message };
         }
       },
       installEngine: async (slug, downloadUrl, version, options) => {

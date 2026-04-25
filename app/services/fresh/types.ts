@@ -101,6 +101,8 @@ export interface GameBananaModProfile extends GameBananaModSummary {
   alternateFileSources?: Array<{
     url: string;
     description?: string;
+    provider?: "gamebanana" | "google_drive" | "mediafire" | "direct" | "unknown";
+    fileId?: number;
   }>;
   tags?: string[];
   devNotes?: string;
@@ -422,6 +424,7 @@ export interface InstallPlan {
 
 export interface InstallOptions {
   forceInstallType?: "executable" | "standard_mod";
+  downloadUrlOverride?: string;
 }
 
 export interface CategoryNode extends GameBananaCategory {

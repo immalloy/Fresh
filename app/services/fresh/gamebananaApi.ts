@@ -127,6 +127,60 @@ function normalizeFile(file: Record<string, unknown>): GameBananaFile {
   };
 }
 
+function normalizeAlternateFileSources(input: unknown): Array<{ url: string; description?: string; provider?: "gamebanana" | "google_drive" | "mediafire" | "direct" | "unknown"; fileId?: number }> {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+
+  const detectProvider = (url: string): "gamebanana" | "google_drive" | "mediafire" | "direct" | "unknown" => {
+    try {
+      const parsed = new URL(url);
+      const host = parsed.hostname.toLowerCase();
+      if (host.includes("gamebanana.com")) return "gamebanana";
+      if (host.includes("drive.google.com") || host.includes("docs.google.com")) return "google_drive";
+      if (host.includes("mediafire.com")) return "mediafire";
+      if (host) return "direct";
+    } catch {
+      return "unknown";
+    }
+    return "unknown";
+  };
+
+  return input.reduce<Array<{ url: string; description?: string; provider?: "gamebanana" | "google_drive" | "mediafire" | "direct" | "unknown"; fileId?: number }>>((acc, entry) => {
+    const source = entry as Record<string, unknown>;
+    const url = [
+      source.url,
+      source._sUrl,
+      source.downloadUrl,
+      source._sDownloadUrl,
+      source._sMirrorUrl,
+      source._sLink,
+    ].find((value): value is string => typeof value === "string" && value.trim().length > 0)?.trim();
+
+    if (!url) {
+      return acc;
+    }
+
+    const description = [
+      source.description,
+      source._sDescription,
+      source._sName,
+      source._sLabel,
+      source._sTitle,
+    ].find((value): value is string => typeof value === "string" && value.trim().length > 0)?.trim();
+
+    const parsedFileId = firstDefinedNumber(source.fileId, source._idFileRow, source._idRow, source._idMirrorRow);
+
+    acc.push({
+      url,
+      description,
+      provider: detectProvider(url),
+      fileId: parsedFileId && parsedFileId > 0 ? parsedFileId : undefined,
+    });
+    return acc;
+  }, []);
+}
+
 function normalizeSummary(record: Record<string, unknown>): GameBananaModSummary {
   const submitter = (record._aSubmitter ?? {}) as Record<string, unknown>;
   const game = (record._aGame ?? {}) as Record<string, unknown>;
@@ -636,18 +690,7 @@ export class GameBananaApiService {
               : [],
           }
         : undefined,
-      alternateFileSources: Array.isArray(payload._aAlternateFileSources)
-        ? payload._aAlternateFileSources.reduce<Array<{ url: string; description?: string }>>((acc, entry) => {
-            const source = entry as Record<string, unknown>;
-            const url = typeof source.url === "string" ? source.url : "";
-            if (!url) return acc;
-            acc.push({
-              url,
-              description: typeof source.description === "string" ? source.description : undefined,
-            });
-            return acc;
-          }, [])
-        : [],
+      alternateFileSources: normalizeAlternateFileSources(payload._aAlternateFileSources),
       tags: Array.isArray(payload._aTags)
         ? payload._aTags
           .map((entry) => {

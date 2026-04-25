@@ -1463,6 +1463,7 @@ export class FreshService {
       fileId,
       selectedEngineId,
       priority,
+      downloadUrlOverride: options?.downloadUrlOverride,
       forceInstallType: options?.forceInstallType,
     });
   }
