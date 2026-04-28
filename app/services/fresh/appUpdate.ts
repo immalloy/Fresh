@@ -73,6 +73,8 @@ export async function checkLatestAppUpdate(input: {
   currentVersion: string;
   platform: ClientPlatform;
 }): Promise<AppUpdateInfo> {
+  const currentVersion = String(input.currentVersion || "0.0.0").replace(/^v/i, "");
+
   const response = await fetch(RELEASES_LATEST_API, {
     headers: {
       Accept: "application/vnd.github+json",
@@ -80,12 +82,21 @@ export async function checkLatestAppUpdate(input: {
   });
 
   if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        available: false,
+        currentVersion,
+        latestVersion: currentVersion,
+        releaseName: "Releases unavailable",
+        releaseUrl: "https://github.com/Crew-Awesome/Fresh/releases/latest",
+        notes: "GitHub releases endpoint returned 404.",
+      };
+    }
     throw new Error(`Update check failed (${response.status})`);
   }
 
   const payload = await response.json() as GitHubReleaseResponse;
   const latestVersion = String(payload.tag_name || "").replace(/^v/i, "");
-  const currentVersion = String(input.currentVersion || "0.0.0").replace(/^v/i, "");
 
   if (!latestVersion) {
     throw new Error("Update check returned no release version");
@@ -104,4 +115,3 @@ export async function checkLatestAppUpdate(input: {
     downloadUrl: pickDownloadAsset(payload.assets || [], input.platform),
   };
 }
-

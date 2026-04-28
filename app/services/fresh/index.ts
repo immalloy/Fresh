@@ -1,5 +1,4 @@
 export { gameBananaApiService } from "./gamebananaApi";
-export { gameJoltApiService } from "./gamejoltApi";
 export { engineCatalogService } from "./engineCatalog";
 export { downloadManager } from "./downloadManager";
 export { modInstallerService } from "./installer";
@@ -8,5 +7,4 @@ export { freshService, formatEngineName } from "./freshService";
 export { detectClientPlatform, pickBestReleaseForPlatform, getPlatformDefaults } from "./platform";
 export { detectRequiredEngineFromCategories, detectExecutableFromCategories } from "./engineDetection";
 export * from "./types";
-
 

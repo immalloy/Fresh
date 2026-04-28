@@ -257,6 +257,18 @@ export class FreshService {
   async checkAppUpdate(): Promise<AppUpdateInfo> {
     const currentVersion = (__FRESH_VERSION__ || "0.0.0").trim().replace(/^v/i, "");
     const buildChannel = (__FRESH_CHANNEL__ || "release").toLowerCase();
+    const runningBrowserDev = import.meta.env.DEV && !window.freshDesktop?.checkAppUpdate;
+
+    if (runningBrowserDev) {
+      return {
+        available: false,
+        currentVersion,
+        latestVersion: currentVersion,
+        releaseName: "Dev mode",
+        releaseUrl: "https://github.com/Crew-Awesome/Fresh/releases/latest",
+        notes: "Update checks are disabled in browser dev mode.",
+      };
+    }
 
     if (buildChannel !== "release") {
       return {
@@ -1470,7 +1482,6 @@ export class FreshService {
 }
 
 export const freshService = new FreshService();
-
 
 
 

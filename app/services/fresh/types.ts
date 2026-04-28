@@ -515,4 +515,3 @@ export interface PagedResult<T> {
   records: T[];
   metadata: PageMetadata;
 }
-
